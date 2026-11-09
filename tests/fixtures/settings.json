@@ -1,0 +1,18 @@
+{
+  "valid": [
+    { "provider": "cloudflare-free", "accountReference": "cloudflare/account", "allowedOrigins": "https://app.example.com", "roomPrefix": "demo-", "region": "any" },
+    { "provider": "cloudflare-paid", "accountReference": "cloudflare/account", "allowedOrigins": ["https://app.example.com", "http://localhost:5173"], "roomPrefix": "demo-", "region": "eu" },
+    { "provider": "own-hardware", "allowedOrigins": "https://app.example.com", "roomPrefix": "demo-" }
+  ],
+  "invalid": [
+    [{ "provider": "vps", "roomPrefix": "demo-" }, "provider"],
+    [{ "provider": "cloudflare-free", "roomPrefix": "demo-" }, "accountReference"],
+    [{ "provider": "cloudflare-free", "accountReference": "token abc 123", "roomPrefix": "demo-" }, "accountReference"],
+    [{ "provider": "cloudflare-free", "accountReference": "cloudflare/account", "roomPrefix": "Demo" }, "roomPrefix"],
+    [{ "provider": "cloudflare-free", "accountReference": "cloudflare/account", "roomPrefix": "demo-", "allowedOrigins": "http://example.com" }, "https"],
+    [{ "provider": "cloudflare-free", "accountReference": "cloudflare/account", "roomPrefix": "demo-", "allowedOrigins": "https://*.example.com" }, "origin"],
+    [{ "provider": "cloudflare-free", "accountReference": "cloudflare/account", "roomPrefix": "demo-", "allowedOrigins": "https://example.com/path" }, "origin"],
+    [{ "provider": "cloudflare-free", "accountReference": "cloudflare/account", "roomPrefix": "demo-", "region": "mars" }, "region"],
+    [{ "provider": "own-hardware", "accountReference": "cloudflare/account", "roomPrefix": "demo-" }, "account"]
+  ]
+}

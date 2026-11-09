@@ -1,0 +1,110 @@
+{
+  "name": "server-host",
+  "version": "0.4.0",
+  "title": "Server host",
+  "description": "Server entry point for a server target: one worker module that runs on Cloudflare Workers or, through a Node http adapter, on the owner's own hardware, with origin policy, region placement and deployment files rendered from typed settings.",
+  "facilities": [
+    {
+      "id": "server-host",
+      "description": "Hosting for the application's room service on Cloudflare or own hardware"
+    }
+  ],
+  "provides": [
+    {
+      "id": "server-host",
+      "type": "ae/server-host",
+      "version": "1.0.0",
+      "path": "interfaces/server-host.json"
+    }
+  ],
+  "requires": [
+    {
+      "id": "room-session",
+      "type": "ae/room-session",
+      "version": "1.0.0",
+      "path": "interfaces/required/room-session.json"
+    },
+    {
+      "id": "room-directory",
+      "type": "ae/room-directory",
+      "version": "1.0.0",
+      "path": "interfaces/required/room-directory.json"
+    }
+  ],
+  "collect": [
+    {
+      "id": "provider",
+      "type": "string",
+      "grammar": "slug",
+      "required": true,
+      "secret": false
+    },
+    {
+      "id": "accountReference",
+      "type": "string",
+      "grammar": "slug",
+      "required": false,
+      "secret": false,
+      "default": "none"
+    },
+    {
+      "id": "allowedOrigins",
+      "type": "string",
+      "grammar": "address",
+      "required": false,
+      "secret": false,
+      "default": "http://localhost:5173"
+    },
+    {
+      "id": "roomPrefix",
+      "type": "string",
+      "grammar": "slug",
+      "required": true,
+      "secret": false
+    },
+    {
+      "id": "region",
+      "type": "string",
+      "grammar": "slug",
+      "required": false,
+      "secret": false,
+      "default": "any"
+    }
+  ],
+  "dependencies": [],
+  "tools": {
+    "node": "26.5.0"
+  },
+  "platforms": [
+    "server"
+  ],
+  "keepsData": true,
+  "suites": [
+    {
+      "id": "web",
+      "argv": [
+        "node",
+        "--test",
+        "tests/web.test.ts"
+      ],
+      "timeoutSeconds": 180
+    }
+  ],
+  "infrastructure": {
+    "accounts": [
+      "cloudflare"
+    ],
+    "deployedReason": "Hosts the application's room service: a Cloudflare Workers account for cloudflare-free and cloudflare-paid, or one machine the owner runs for own-hardware. The package itself deploys nothing."
+  },
+  "text": {
+    "purpose": "The entry point of a server target. The application writes one worker module (a default-exported entry built from the room service, and the Room and Directory object classes). This component validates the server settings, puts the origin policy and region placement in front of that entry, and renders what is needed to run it: a Wrangler project and deploy script for Cloudflare Workers, or a start script for the Node adapter, which runs the same module on Node's http server for own hardware. The Node adapter supplies the pieces of the Workers runtime the room service uses: named single-instance objects with disk storage and alarms, hibernating WebSockets with automatic ping replies, and the WebSocketPair and WebSocketRequestResponsePair globals.",
+    "userInputs": "The installer collects `provider` (`cloudflare-free`, `cloudflare-paid` or `own-hardware`), `accountReference` (a reference name, never a value: the name of the secret in the release pipeline's store that holds the Cloudflare account; default `none`, which is right on own hardware and refused on Cloudflare), `allowedOrigins` (one web address of the client; default `http://localhost:5173`; loopback addresses are trusted anyway, and more origins are passed to `createServerHost` as a list), `roomPrefix` (also the prefix of video room names) and `region` (default `any`; on Cloudflare a jurisdiction `eu`, `us` or `fedramp`, or a location hint such as `weur`; on own hardware a free label only). aepm renders all five into `host-settings.ts` at install.",
+    "integration": "aepm renders `components/server-host/server/host-settings.ts` from the five settings (a template artefact; nothing else writes it). It exports `hostSettings` (the typed values) and `serverSettings()` (the settings `createServerHost` takes; `none` for `accountReference` means no account). In the application's server module: `import { serverSettings } from \"./host-settings.ts\"` and `const host = createServerHost(serverSettings())` (or `createServerHostFromHostSettings(hostSettings)`) from `server/host.ts`; build the room service as usual (`createWorker(host.roomsSettings(), roomIds, service)`); `export const Room = host.objectClass(RoomBase)` and `export const Directory = host.objectClass(DirectoryBase)` (`DirectoryBase = createDirectoryClass(DurableObject, options)` from room-directory); `export default host.entry(worker)`. `host.deployFiles()` renders the deployment files from the same settings; write them next to the module. Cloudflare providers: write them, then run `sh deploy.sh` with the secret reference resolved into `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN`. Own hardware: write `start.ts`, run `node start.ts`; it imports `server/node/register.ts` before the application module (a registered loader maps `cloudflare:workers` to a local shim and extensionless relative imports to `.ts`), then calls `serveNode`. `examples/worker.ts` composes the host with a small room service, `examples/start-own-hardware.ts` runs it, and `examples/rendered-host-settings.ts` is what aepm renders for one set of answers. `server/node/storage-export.ts` exports and imports the Node adapter's data as ndjson (see migration.json).",
+    "infrastructure": "cloudflare-free and cloudflare-paid deploy one Worker with SQLite-backed Durable Objects (the only kind the free plan offers) to a Cloudflare account supplied by reference; nothing in the package holds an account value, and `wrangler.jsonc` carries only a comment naming the reference. own-hardware needs one machine with Node 26 or later, a port, and TLS in front if clients connect from https pages (the adapter speaks plain http and ws). Limits and prices are in suitability.json with their sources; the Node adapter has no measured limits.",
+    "verification": "`node --test tests/web.test.ts` checks settings validation (every provider, account reference grammar, origins, regions), the `host-settings.ts` template rendered by a small pure renderer that mirrors aepm's `{{setting}}` rules (quoted positions, grammars, secret settings refused, defaults) and then loaded and handed to the host,, the origin policy and region placement against fake namespaces, the rendered deployment files, RFC 6455 framing, and the Node adapter end to end on a real socket with a small Workers-style service: HTTP routing to named objects, object-to-object calls, streamed bodies, WebSocket handshake, first message, auto ping reply, broadcast, binary frames, server and client close, protocol errors, alarms, abort and restart, persistence across a restart including a pending alarm, and storage export and import. `authoring/integration-realtime-rooms.ts` (not packaged) additionally runs the real realtime-rooms service on the Node adapter. Deployment to Cloudflare, the wrangler files against a real account, and TLS, load and long-running behaviour of the Node adapter were not exercised.",
+    "scenarios": "A small table uses cloudflare-free and stays within the free request allowance; a larger or always-on service uses cloudflare-paid; a club that prefers its own machine uses own-hardware and keeps data in a folder it can back up. A server pinned to `eu` keeps its objects in the European Union jurisdiction on Cloudflare.",
+    "updates": "Patch updates replace the owned files; render the deployment files again after each update. The Node adapter's data format is described in migration.json (`ae/object-storage` 1.0.0). `accountReference` is a non-secret reference name with default `none` (a template cannot render a secret setting) and `allowedOrigins` has the default `http://localhost:5173`. `ServerSettings` is the lower layer that `createServerHost` takes; `serverSettings()` builds it from the rendered `hostSettings`. The Directory class comes from room-directory. Removal deletes the owned sources; on Cloudflare the Worker and its objects remain in the account until the owner deletes them, and on own hardware the data folder remains until the owner deletes it (export it first)."
+  },
+  "agentInstructions": "Select `ourapps-ae/server-host` when the recipe's server target is chosen; pick the profile (`free` maps to cloudflare-free, `paid` to cloudflare-paid, own hardware to own-hardware) from the scale answer using suitability.json. Connect `room-session` and `room-directory` to the room service and directory components. Never put a Cloudflare token or account id in a setting: supply the name of the secret as `accountReference`. The recipe's server code imports `host-settings.ts` from the installed `components/server-host/server/` folder; do not write that file.",
+  "developerInstructions": "Cloudflare: create an account, create an API token for Workers, store the account id and token in the release pipeline's secret store under the reference name, and give that name as `accountReference`; the pipeline exports `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` for `deploy.sh`. Own hardware: install Node 26 or later, copy the rendered `start.ts`, set `PORT`, `HOST` and `DATA_DIRECTORY`, put a TLS-terminating proxy in front, back up the data folder (or run the ndjson export on a schedule). To check: run the commands below; for a live check call `GET /health` on the deployed address."
+}

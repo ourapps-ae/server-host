@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ae/object-storage",
+  "title": "Object storage 1.0.0",
+  "description": "What the Node adapter keeps for each named object (one file per object under <dataDirectory>/<binding>/), and the ndjson lines used to export and import it. Values are opaque to this component; the application's object classes read and write them. On Cloudflare the objects keep their own storage and this format is not used.",
+  "version": "1.0.0",
+  "$defs": {
+    "header": {
+      "type": "object",
+      "required": ["type", "format", "version", "objects"],
+      "properties": {
+        "type": { "const": "header" },
+        "format": { "const": "ae/object-storage" },
+        "version": { "const": "1.0.0" },
+        "objects": { "type": "integer", "minimum": 0, "description": "Number of object lines that follow." }
+      },
+      "additionalProperties": false
+    },
+    "objectLine": {
+      "type": "object",
+      "required": ["type", "namespace", "name", "storage", "alarm", "sha256"],
+      "properties": {
+        "type": { "const": "object" },
+        "namespace": { "type": "string", "pattern": "^[A-Za-z][A-Za-z0-9_]*$", "description": "The binding name, for example ROOM." },
+        "name": { "type": "string", "minLength": 1, "description": "The object name passed to getByName." },
+        "storage": { "type": "object", "description": "Key to JSON value, as stored by storage.put." },
+        "alarm": { "type": ["integer", "null"], "description": "Milliseconds since the Unix epoch of the pending alarm, or null." },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$", "description": "SHA-256 of {namespace,name,storage,alarm} as JSON with keys sorted at every level." }
+      },
+      "additionalProperties": false
+    },
+    "objectFile": {
+      "description": "The file the Node adapter keeps: storage values as JSON text, written through a temporary file and renamed.",
+      "type": "object",
+      "required": ["storage", "alarm"],
+      "properties": {
+        "storage": { "type": "object", "additionalProperties": { "type": "string" } },
+        "alarm": { "type": ["integer", "null"] }
+      },
+      "additionalProperties": false
+    }
+  },
+  "oneOf": [
+    { "$ref": "#/$defs/header" },
+    { "$ref": "#/$defs/objectLine" }
+  ]
+}

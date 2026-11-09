@@ -1,0 +1,29 @@
+{
+  "format": 1,
+  "stores": [
+    {
+      "id": "objects",
+      "schema": { "name": "ae/object-storage", "version": "1.0.0", "file": "interfaces/object-storage.schema.json" },
+      "location": "Own hardware only: <dataDirectory>/<binding>/<base64url object name>.json, one file per Durable Object. On Cloudflare the objects keep their own storage, described by the room service's migration.json (ae/room-state)."
+    }
+  ],
+  "export": [
+    { "format": "ndjson", "portable": true, "operation": "exportStorage", "description": "implementation/server/node/storage-export.ts readStorage(dataDirectory) then exportStorage(records): a header line, then one object line per object in sorted binding/name order with a sha256 over its canonical JSON. Safe to run while the server is stopped; while it runs, files are replaced atomically so each object is read whole." }
+  ],
+  "import": [
+    { "format": "ndjson", "portable": true, "operation": "importStorage", "description": "importStorage(text) verifies header, count, checksums, duplicates and binding names; writeStorage(dataDirectory, records) then writes the files and refuses to overwrite an existing object. Moving between Cloudflare and own hardware needs the room service's own export (ae/room-state) written back through its application routes." }
+  ],
+  "steps": [],
+  "verification": { "counts": true, "checksums": "sha256 per object over canonical JSON (keys sorted at every level)", "sampleReadBack": 20, "endToEnd": "tests/web.test.ts" },
+  "limits": {
+    "maxMegabytes": 1024,
+    "requiresStop": false,
+    "cannotPreserve": [
+      "open connections (clients reconnect)",
+      "ordering of changes made while the export runs",
+      "alarms that were due while the server was stopped fire once at the next start rather than at their time"
+    ]
+  },
+  "retention": { "afterRemovalDays": 30 },
+  "notes": "maxMegabytes is a planning figure for total data on one machine chosen by this package, not a measured limit and not a provider limit: the Node adapter holds every live object in memory and rewrites an object's whole file on each change. afterRemovalDays is the retention this package recommends for the exported file after removal."
+}

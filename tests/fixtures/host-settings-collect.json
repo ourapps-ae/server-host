@@ -1,0 +1,48 @@
+{
+  "collect": [
+    {
+      "id": "provider",
+      "type": "string",
+      "grammar": "slug",
+      "required": true,
+      "secret": false
+    },
+    {
+      "id": "accountReference",
+      "type": "string",
+      "grammar": "slug",
+      "required": false,
+      "secret": false,
+      "default": "none"
+    },
+    {
+      "id": "allowedOrigins",
+      "type": "string",
+      "grammar": "address",
+      "required": false,
+      "secret": false,
+      "default": "http://localhost:5173"
+    },
+    {
+      "id": "roomPrefix",
+      "type": "string",
+      "grammar": "slug",
+      "required": true,
+      "secret": false
+    },
+    {
+      "id": "region",
+      "type": "string",
+      "grammar": "slug",
+      "required": false,
+      "secret": false,
+      "default": "any"
+    }
+  ],
+  "artefact": {
+    "source": "implementation/server/host-settings.ts",
+    "destination": "components/server-host/server/host-settings.ts",
+    "template": true,
+    "executable": false
+  }
+}

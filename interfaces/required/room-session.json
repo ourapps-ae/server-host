@@ -1,0 +1,28 @@
+{
+  "id": "room-session",
+  "type": "ae/room-session",
+  "version": "1.0.0",
+  "notes": "What server-host takes from the room service (realtime-rooms interfaces/room-session.json). The host wraps these exports; it does not replace them.",
+  "operations": {
+    "createWorker": {
+      "arguments": [
+        "settings:{applicationId,allowedOrigins:string[],roomPrefix}",
+        "roomIds:string[]",
+        "service?:function"
+      ],
+      "returns": "{fetch(request,env):Promise<Response>}; passed to ServerHost.entry(worker)"
+    },
+    "Room": {
+      "arguments": [
+        "ctx",
+        "env"
+      ],
+      "returns": "Durable Object class from createRoomClass; passed through ServerHost.objectClass and bound as ROOM"
+    }
+  },
+  "bindings": {
+    "ROOM": "Durable Object namespace of the Room class (class name Room)",
+    "DIRECTORY": "Durable Object namespace of the Directory class (class name Directory)"
+  },
+  "settings": "ServerHost.roomsSettings(applicationId) returns exactly the Settings shape createWorker takes"
+}

@@ -1,0 +1,78 @@
+{
+  "id": "ourapps-ae.server-host",
+  "name": "Server host",
+  "kind": "component",
+  "status": "example",
+  "package": "ourapps-ae/server-host",
+  "version": "0.4.0",
+  "ports": [
+    {
+      "id": "room-session",
+      "name": "Room session",
+      "direction": "input",
+      "kind": "interface",
+      "type": "ae/room-session",
+      "version": "1.0.0",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "id": "room-directory",
+      "name": "Room directory",
+      "direction": "input",
+      "kind": "interface",
+      "type": "ae/room-directory",
+      "version": "1.0.0",
+      "required": true,
+      "cardinality": "one"
+    },
+    {
+      "id": "server-host",
+      "name": "Server host",
+      "direction": "output",
+      "kind": "interface",
+      "type": "ae/server-host",
+      "version": "1.0.0"
+    }
+  ],
+  "settings": [
+    {
+      "id": "provider",
+      "name": "Provider",
+      "type": "string",
+      "required": true,
+      "secret": false
+    },
+    {
+      "id": "accountReference",
+      "name": "Accountreference",
+      "type": "string",
+      "required": false,
+      "secret": false,
+      "default": "none"
+    },
+    {
+      "id": "allowedOrigins",
+      "name": "Allowedorigins",
+      "type": "string",
+      "required": false,
+      "secret": false,
+      "default": "http://localhost:5173"
+    },
+    {
+      "id": "roomPrefix",
+      "name": "Roomprefix",
+      "type": "string",
+      "required": true,
+      "secret": false
+    },
+    {
+      "id": "region",
+      "name": "Region",
+      "type": "string",
+      "required": false,
+      "secret": false,
+      "default": "any"
+    }
+  ]
+}

@@ -1,0 +1,114 @@
+{
+  "id": "server-host",
+  "type": "ae/server-host",
+  "version": "1.0.0",
+  "operations": {
+    "createServerHost": {
+      "arguments": [
+        "settings:ServerSettings"
+      ],
+      "returns": "ServerHost"
+    },
+    "validateSettings": {
+      "arguments": [
+        "settings:ServerSettings"
+      ],
+      "returns": "ResolvedServerSettings"
+    },
+    "ServerHost.roomsSettings": {
+      "arguments": [
+        "applicationId:string|undefined"
+      ],
+      "returns": "{applicationId:string,allowedOrigins:string[],roomPrefix:string}"
+    },
+    "ServerHost.entry": {
+      "arguments": [
+        "worker:{fetch(request:Request,env:any):Promise<Response>}",
+        "options:EntryOptions|undefined"
+      ],
+      "returns": "{fetch(request:Request,env:any):Promise<Response>}"
+    },
+    "ServerHost.objectClass": {
+      "arguments": [
+        "Base:class"
+      ],
+      "returns": "class (placed in the configured region)"
+    },
+    "ServerHost.deployFiles": {
+      "arguments": [
+        "options:DeployOptions|undefined"
+      ],
+      "returns": "Record<string,string> (wrangler.jsonc, deploy.sh, package.json | start.ts, package.json)"
+    },
+    "originAllowed": {
+      "arguments": [
+        "origin:string|null",
+        "settings:{allowedOrigins:string[]}",
+        "webOrigins:string|undefined",
+        "options:EntryOptions|undefined"
+      ],
+      "returns": "boolean"
+    },
+    "regionEnv": {
+      "arguments": [
+        "env:Record<string,any>",
+        "region:string",
+        "bindings:string[]|undefined"
+      ],
+      "returns": "Record<string,any>"
+    },
+    "serveNode": {
+      "arguments": [
+        "options:{entry:Worker,objects:Record<string,class>,variables?:Record<string,string>,port?:number,host?:string,dataDirectory?:string|null,maxMessageBytes?:number}"
+      ],
+      "returns": "Promise<{port:number,host:string,runtime:ObjectRuntime,close():Promise<void>}>"
+    },
+    "readStorage": {
+      "arguments": [
+        "dataDirectory:string"
+      ],
+      "returns": "ObjectRecord[]"
+    },
+    "exportStorage": {
+      "arguments": [
+        "records:ObjectRecord[]"
+      ],
+      "returns": "string (ndjson, ae/object-storage 1.0.0)"
+    },
+    "importStorage": {
+      "arguments": [
+        "text:string"
+      ],
+      "returns": "ObjectRecord[]"
+    },
+    "writeStorage": {
+      "arguments": [
+        "dataDirectory:string",
+        "records:ObjectRecord[]"
+      ],
+      "returns": "void"
+    },
+    "verifyStorage": {
+      "arguments": [
+        "expected:ObjectRecord[]",
+        "actual:ObjectRecord[]",
+        "sample:number|undefined"
+      ],
+      "returns": "{counts:boolean,checksums:boolean,sample:string[]}"
+    }
+  },
+  "types": {
+    "ServerSettings": "{provider:'cloudflare-free'|'cloudflare-paid'|'own-hardware',accountReference?:string (name of a secret, never a value; required on Cloudflare, refused on own hardware),allowedOrigins?:string|string[] (https origins, plus http on localhost),roomPrefix:slug,region?:'any'|'eu'|'us'|'fedramp'|Cloudflare location hint|slug}",
+    "EntryOptions": "{originPatterns?:RegExp[],allowLoopback?:boolean (default true),bindings?:string[] (default ROOM, DIRECTORY)}",
+    "DeployOptions": "{main?:string,workerName?:string,objects?:{binding,className}[],compatibilityDate?:string,variables?:Record<string,string>,cpuMilliseconds?:number (paid only),hostPath?:string,devPort?:number}",
+    "ObjectRecord": "{namespace:string,name:string,storage:Record<string,json>,alarm:number|null}"
+  },
+  "adapters": {
+    "cloudflare": "The application's worker module runs as it is on Workers; providers cloudflare-free and cloudflare-paid. Files: wrangler.jsonc, deploy.sh, package.json.",
+    "node": "serveNode runs the same default-exported entry and Durable Object classes on Node's http server; provider own-hardware. Files: start.ts, package.json. Import node/register.ts before any module written for Workers."
+  },
+  "requirements": {
+    "room-session": "Described in interfaces/required/room-session.json. The worker module default-exports an entry built from the room service (realtime-rooms createWorker) and exports its Room class; the host wraps it, it does not replace it.",
+    "room-directory": "Described in interfaces/required/room-directory.json. The Directory class comes from room-directory (createDirectoryClass) and is exported next to Room."
+  }
+}
