@@ -3,7 +3,7 @@
 ## For the agent
 Select `ourapps-ae/server-host` when the recipe's server target is chosen; pick the profile (`free` maps to cloudflare-free, `paid` to cloudflare-paid, own hardware to own-hardware) from the scale answer using suitability.json. Connect `room-session` and `room-directory` to the room service and directory components. Never put a Cloudflare token or account id in a setting: supply the name of the secret as `accountReference`. The recipe's server code imports `host-settings.ts` from the installed `components/server-host/server/` folder; do not write that file.
 
-- Select package `ourapps-ae/server-host` version `0.4.0`.
+- Select package `ourapps-ae/server-host` version `0.5.0`.
 - Settings to configure:
   - `provider` (string, slug; required)
   - `accountReference` (string, slug; optional; default `none`; the name of the secret, never its value)

@@ -1,114 +1,1221 @@
 {
-  "id": "server-host",
-  "type": "ae/server-host",
-  "version": "1.0.0",
-  "operations": {
-    "createServerHost": {
-      "arguments": [
-        "settings:ServerSettings"
-      ],
-      "returns": "ServerHost"
-    },
-    "validateSettings": {
-      "arguments": [
-        "settings:ServerSettings"
-      ],
-      "returns": "ResolvedServerSettings"
-    },
-    "ServerHost.roomsSettings": {
-      "arguments": [
-        "applicationId:string|undefined"
-      ],
-      "returns": "{applicationId:string,allowedOrigins:string[],roomPrefix:string}"
-    },
-    "ServerHost.entry": {
-      "arguments": [
-        "worker:{fetch(request:Request,env:any):Promise<Response>}",
-        "options:EntryOptions|undefined"
-      ],
-      "returns": "{fetch(request:Request,env:any):Promise<Response>}"
-    },
-    "ServerHost.objectClass": {
-      "arguments": [
-        "Base:class"
-      ],
-      "returns": "class (placed in the configured region)"
-    },
-    "ServerHost.deployFiles": {
-      "arguments": [
-        "options:DeployOptions|undefined"
-      ],
-      "returns": "Record<string,string> (wrangler.jsonc, deploy.sh, package.json | start.ts, package.json)"
-    },
-    "originAllowed": {
-      "arguments": [
-        "origin:string|null",
-        "settings:{allowedOrigins:string[]}",
-        "webOrigins:string|undefined",
-        "options:EntryOptions|undefined"
-      ],
-      "returns": "boolean"
-    },
-    "regionEnv": {
-      "arguments": [
-        "env:Record<string,any>",
-        "region:string",
-        "bindings:string[]|undefined"
-      ],
-      "returns": "Record<string,any>"
-    },
-    "serveNode": {
-      "arguments": [
-        "options:{entry:Worker,objects:Record<string,class>,variables?:Record<string,string>,port?:number,host?:string,dataDirectory?:string|null,maxMessageBytes?:number}"
-      ],
-      "returns": "Promise<{port:number,host:string,runtime:ObjectRuntime,close():Promise<void>}>"
-    },
-    "readStorage": {
-      "arguments": [
-        "dataDirectory:string"
-      ],
-      "returns": "ObjectRecord[]"
-    },
-    "exportStorage": {
-      "arguments": [
-        "records:ObjectRecord[]"
-      ],
-      "returns": "string (ndjson, ae/object-storage 1.0.0)"
-    },
-    "importStorage": {
-      "arguments": [
-        "text:string"
-      ],
-      "returns": "ObjectRecord[]"
-    },
-    "writeStorage": {
-      "arguments": [
-        "dataDirectory:string",
-        "records:ObjectRecord[]"
-      ],
-      "returns": "void"
-    },
-    "verifyStorage": {
-      "arguments": [
-        "expected:ObjectRecord[]",
-        "actual:ObjectRecord[]",
-        "sample:number|undefined"
-      ],
-      "returns": "{counts:boolean,checksums:boolean,sample:string[]}"
+  "openrpc": "1.3.2",
+  "info": {
+    "title": "ae/server-host",
+    "version": "1.0.0",
+    "description": "Server host for the room service (TypeScript modules server/host.ts and server/node/*.ts). The application writes one worker module that default-exports an entry and exports its Durable Object classes; Cloudflare runs it as it is (providers cloudflare-free and cloudflare-paid, files wrangler.jsonc, deploy.sh, package.json), and serveNode runs the same exports on Node's http server (provider own-hardware, files start.ts, package.json; import node/register.ts before any module written for Workers). The room service entry comes from realtime-rooms createWorker and the Directory class from room-directory createDirectoryClass; the host wraps them, it does not replace them.",
+    "license": {
+      "name": "Apache-2.0",
+      "url": "https://www.apache.org/licenses/LICENSE-2.0"
     }
   },
-  "types": {
-    "ServerSettings": "{provider:'cloudflare-free'|'cloudflare-paid'|'own-hardware',accountReference?:string (name of a secret, never a value; required on Cloudflare, refused on own hardware),allowedOrigins?:string|string[] (https origins, plus http on localhost),roomPrefix:slug,region?:'any'|'eu'|'us'|'fedramp'|Cloudflare location hint|slug}",
-    "EntryOptions": "{originPatterns?:RegExp[],allowLoopback?:boolean (default true),bindings?:string[] (default ROOM, DIRECTORY)}",
-    "DeployOptions": "{main?:string,workerName?:string,objects?:{binding,className}[],compatibilityDate?:string,variables?:Record<string,string>,cpuMilliseconds?:number (paid only),hostPath?:string,devPort?:number}",
-    "ObjectRecord": "{namespace:string,name:string,storage:Record<string,json>,alarm:number|null}"
-  },
-  "adapters": {
-    "cloudflare": "The application's worker module runs as it is on Workers; providers cloudflare-free and cloudflare-paid. Files: wrangler.jsonc, deploy.sh, package.json.",
-    "node": "serveNode runs the same default-exported entry and Durable Object classes on Node's http server; provider own-hardware. Files: start.ts, package.json. Import node/register.ts before any module written for Workers."
-  },
-  "requirements": {
-    "room-session": "Described in interfaces/required/room-session.json. The worker module default-exports an entry built from the room service (realtime-rooms createWorker) and exports its Room class; the host wraps it, it does not replace it.",
-    "room-directory": "Described in interfaces/required/room-directory.json. The Directory class comes from room-directory (createDirectoryClass) and is exported next to Room."
+  "methods": [
+    {
+      "name": "createServerHost",
+      "description": "Validates the settings and returns the host.",
+      "params": [
+        {
+          "name": "settings",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/ServerSettings"
+          }
+        }
+      ],
+      "result": {
+        "name": "host",
+        "schema": {
+          "$ref": "#/components/schemas/ServerHost"
+        }
+      },
+      "errors": [
+        {
+          "$ref": "#/components/errors/SettingsError"
+        }
+      ]
+    },
+    {
+      "name": "createServerHostFromHostSettings",
+      "description": "createServerHost of fromHostSettings(raw); raw is the hostSettings object aepm renders into host-settings.ts.",
+      "params": [
+        {
+          "name": "raw",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/HostSettings"
+          }
+        }
+      ],
+      "result": {
+        "name": "host",
+        "schema": {
+          "$ref": "#/components/schemas/ServerHost"
+        }
+      },
+      "errors": [
+        {
+          "$ref": "#/components/errors/SettingsError"
+        }
+      ]
+    },
+    {
+      "name": "validateSettings",
+      "description": "Checks provider, roomPrefix, region and accountReference, picks the adapter and parses allowedOrigins.",
+      "params": [
+        {
+          "name": "settings",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/ServerSettings"
+          }
+        }
+      ],
+      "result": {
+        "name": "resolved",
+        "schema": {
+          "$ref": "#/components/schemas/ResolvedServerSettings"
+        }
+      },
+      "errors": [
+        {
+          "$ref": "#/components/errors/SettingsError"
+        }
+      ]
+    },
+    {
+      "name": "parseOrigins",
+      "description": "Distinct origins from a list or space-separated text; empty or absent gives an empty list.",
+      "params": [
+        {
+          "name": "value",
+          "required": false,
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "result": {
+        "name": "origins",
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^https://[a-z0-9.-]+(:[0-9]{1,5})?$|^http://(localhost|127\\.0\\.0\\.1)(:[0-9]{1,5})?$"
+          }
+        }
+      },
+      "errors": [
+        {
+          "$ref": "#/components/errors/SettingsError"
+        }
+      ]
+    },
+    {
+      "name": "fromHostSettings",
+      "description": "The ServerSettings of rendered host settings; accountReference none means no account reference.",
+      "params": [
+        {
+          "name": "raw",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/HostSettings"
+          }
+        }
+      ],
+      "result": {
+        "name": "settings",
+        "schema": {
+          "$ref": "#/components/schemas/ServerSettings"
+        }
+      }
+    },
+    {
+      "name": "adapterFor",
+      "description": "node for own-hardware, cloudflare otherwise.",
+      "params": [
+        {
+          "name": "provider",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/Provider"
+          }
+        }
+      ],
+      "result": {
+        "name": "adapter",
+        "schema": {
+          "$ref": "#/components/schemas/AdapterKind"
+        }
+      }
+    },
+    {
+      "name": "applicationIdFrom",
+      "description": "The room prefix without its trailing dashes (the prefix itself when only dashes would remain).",
+      "params": [
+        {
+          "name": "roomPrefix",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "result": {
+        "name": "applicationId",
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    {
+      "name": "roomsSettings",
+      "description": "The settings in the shape the room service takes.",
+      "params": [
+        {
+          "name": "settings",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/ResolvedServerSettings"
+          }
+        },
+        {
+          "name": "applicationId",
+          "required": false,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "result": {
+        "name": "settings",
+        "schema": {
+          "$ref": "#/components/schemas/RoomsSettings"
+        }
+      }
+    },
+    {
+      "name": "ServerHost.roomsSettings",
+      "description": "roomsSettings of the host's settings.",
+      "params": [
+        {
+          "name": "applicationId",
+          "required": false,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "result": {
+        "name": "settings",
+        "schema": {
+          "$ref": "#/components/schemas/RoomsSettings"
+        }
+      }
+    },
+    {
+      "name": "ServerHost.entry",
+      "description": "createEntry of the worker with the host's settings: origin policy and region placement in front of the room service.",
+      "params": [
+        {
+          "name": "worker",
+          "required": true,
+          "schema": {
+            "description": "Worker: an object with fetch(request: Request, env) => Promise<Response>."
+          }
+        },
+        {
+          "name": "options",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/EntryOptions"
+          }
+        }
+      ],
+      "result": {
+        "name": "entry",
+        "schema": {
+          "description": "Worker: an object with fetch(request: Request, env) => Promise<Response>."
+        }
+      }
+    },
+    {
+      "name": "ServerHost.objectClass",
+      "description": "withRegion of the class with the host's settings.",
+      "params": [
+        {
+          "name": "Base",
+          "required": true,
+          "schema": {
+            "description": "A Durable Object class: new (ctx, env) with optional fetch, alarm, webSocketMessage, webSocketClose and webSocketError."
+          }
+        }
+      ],
+      "result": {
+        "name": "class",
+        "schema": {
+          "description": "A Durable Object class: new (ctx, env) with optional fetch, alarm, webSocketMessage, webSocketClose and webSocketError."
+        }
+      }
+    },
+    {
+      "name": "ServerHost.deployFiles",
+      "description": "deployFiles of the host's settings.",
+      "params": [
+        {
+          "name": "options",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/DeployOptions"
+          }
+        }
+      ],
+      "result": {
+        "name": "files",
+        "schema": {
+          "$ref": "#/components/schemas/DeployFiles"
+        }
+      },
+      "errors": [
+        {
+          "$ref": "#/components/errors/SettingsError"
+        }
+      ]
+    },
+    {
+      "name": "createEntry",
+      "description": "A worker that adds an accepted Origin to WEB_ORIGINS for the request and places the bindings in the region before calling the inner worker.",
+      "params": [
+        {
+          "name": "worker",
+          "required": true,
+          "schema": {
+            "description": "Worker: an object with fetch(request: Request, env) => Promise<Response>."
+          }
+        },
+        {
+          "name": "settings",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/ResolvedServerSettings"
+          }
+        },
+        {
+          "name": "options",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/EntryOptions"
+          }
+        }
+      ],
+      "result": {
+        "name": "entry",
+        "schema": {
+          "description": "Worker: an object with fetch(request: Request, env) => Promise<Response>."
+        }
+      }
+    },
+    {
+      "name": "originAllowed",
+      "description": "True when origin is listed in settings.allowedOrigins, matches an origin pattern, is loopback (unless allowLoopback is false), or is in the comma-separated webOrigins.",
+      "params": [
+        {
+          "name": "origin",
+          "required": true,
+          "schema": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        {
+          "name": "settings",
+          "required": true,
+          "schema": {
+            "type": "object",
+            "properties": {
+              "allowedOrigins": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "allowedOrigins"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "webOrigins",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "description": "Comma-separated origins; defaults to empty."
+          }
+        },
+        {
+          "name": "options",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/EntryOptions"
+          }
+        }
+      ],
+      "result": {
+        "name": "allowed",
+        "schema": {
+          "type": "boolean"
+        }
+      }
+    },
+    {
+      "name": "placementApplies",
+      "description": "True on Cloudflare when region is not any.",
+      "params": [
+        {
+          "name": "settings",
+          "required": true,
+          "schema": {
+            "type": "object",
+            "properties": {
+              "adapter": {
+                "$ref": "#/components/schemas/AdapterKind"
+              },
+              "region": {
+                "$ref": "#/components/schemas/Region"
+              }
+            },
+            "required": [
+              "adapter",
+              "region"
+            ],
+            "additionalProperties": true
+          }
+        }
+      ],
+      "result": {
+        "name": "applies",
+        "schema": {
+          "type": "boolean"
+        }
+      }
+    },
+    {
+      "name": "regionEnv",
+      "description": "A copy of env whose namespace bindings are restricted to the jurisdiction or carry the location hint; env itself when region is any. Bindings that are not namespaces are left alone.",
+      "params": [
+        {
+          "name": "env",
+          "required": true,
+          "schema": {
+            "type": "object",
+            "additionalProperties": {}
+          }
+        },
+        {
+          "name": "region",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/Region"
+          }
+        },
+        {
+          "name": "bindings",
+          "description": "Defaults to ROOM and DIRECTORY.",
+          "required": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      ],
+      "result": {
+        "name": "env",
+        "schema": {
+          "type": "object",
+          "additionalProperties": {}
+        }
+      },
+      "errors": [
+        {
+          "$ref": "#/components/errors/PlacementError"
+        }
+      ]
+    },
+    {
+      "name": "withRegion",
+      "description": "A subclass whose env is placed by regionEnv, so objects reach each other in the same jurisdiction; Base itself when placement does not apply.",
+      "params": [
+        {
+          "name": "Base",
+          "required": true,
+          "schema": {
+            "description": "A Durable Object class: new (ctx, env) with optional fetch, alarm, webSocketMessage, webSocketClose and webSocketError."
+          }
+        },
+        {
+          "name": "settings",
+          "required": true,
+          "schema": {
+            "type": "object",
+            "properties": {
+              "adapter": {
+                "$ref": "#/components/schemas/AdapterKind"
+              },
+              "region": {
+                "$ref": "#/components/schemas/Region"
+              }
+            },
+            "required": [
+              "adapter",
+              "region"
+            ],
+            "additionalProperties": true
+          }
+        },
+        {
+          "name": "bindings",
+          "required": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      ],
+      "result": {
+        "name": "class",
+        "schema": {
+          "description": "A Durable Object class: new (ctx, env) with optional fetch, alarm, webSocketMessage, webSocketClose and webSocketError."
+        }
+      }
+    },
+    {
+      "name": "deployFiles",
+      "description": "The deployment files for the adapter.",
+      "params": [
+        {
+          "name": "settings",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/ResolvedServerSettings"
+          }
+        },
+        {
+          "name": "options",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/DeployOptions"
+          }
+        }
+      ],
+      "result": {
+        "name": "files",
+        "schema": {
+          "$ref": "#/components/schemas/DeployFiles"
+        }
+      },
+      "errors": [
+        {
+          "$ref": "#/components/errors/SettingsError"
+        }
+      ]
+    },
+    {
+      "name": "serveNode",
+      "description": "Runs the entry and object classes on Node's http server with WebSocket upgrades, object storage in dataDirectory and alarms; resolves once listening.",
+      "params": [
+        {
+          "name": "options",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/NodeServeOptions"
+          }
+        }
+      ],
+      "result": {
+        "name": "server",
+        "schema": {
+          "$ref": "#/components/schemas/RunningNodeServer"
+        }
+      }
+    },
+    {
+      "name": "readStorage",
+      "description": "Every object kept in the data directory, sorted by namespace and name; empty when the directory does not exist.",
+      "params": [
+        {
+          "name": "dataDirectory",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "result": {
+        "name": "records",
+        "schema": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/ObjectRecord"
+          }
+        }
+      }
+    },
+    {
+      "name": "exportStorage",
+      "description": "The records as ndjson (ae/object-storage 1.0.0, interfaces/object-storage.schema.json): a header line, then one object line per record in sorted order with its sha256.",
+      "params": [
+        {
+          "name": "records",
+          "required": true,
+          "schema": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ObjectRecord"
+            }
+          }
+        }
+      ],
+      "result": {
+        "name": "text",
+        "schema": {
+          "type": "string",
+          "description": "ndjson ending in a newline."
+        }
+      }
+    },
+    {
+      "name": "importStorage",
+      "description": "The records of an ndjson export after checking the header, line types, checksums, duplicates, namespaces and count.",
+      "params": [
+        {
+          "name": "text",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "result": {
+        "name": "records",
+        "schema": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/ObjectRecord"
+          }
+        }
+      },
+      "errors": [
+        {
+          "$ref": "#/components/errors/StorageFormatError"
+        }
+      ]
+    },
+    {
+      "name": "writeStorage",
+      "description": "Writes the records as object files into the data directory, each through a temporary file and a rename; refuses to overwrite an existing object.",
+      "params": [
+        {
+          "name": "dataDirectory",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "records",
+          "required": true,
+          "schema": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ObjectRecord"
+            }
+          }
+        }
+      ],
+      "result": {
+        "name": "none",
+        "description": "Returns nothing.",
+        "schema": {
+          "type": "null"
+        }
+      },
+      "errors": [
+        {
+          "$ref": "#/components/errors/ObjectExists"
+        }
+      ]
+    },
+    {
+      "name": "verifyStorage",
+      "description": "Compares counts and digests of expected and actual records and names the sample to read back.",
+      "params": [
+        {
+          "name": "expected",
+          "required": true,
+          "schema": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ObjectRecord"
+            }
+          }
+        },
+        {
+          "name": "actual",
+          "required": true,
+          "schema": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ObjectRecord"
+            }
+          }
+        },
+        {
+          "name": "sample",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "description": "Defaults to 20.",
+            "minimum": 0
+          }
+        }
+      ],
+      "result": {
+        "name": "check",
+        "schema": {
+          "$ref": "#/components/schemas/StorageCheck"
+        }
+      }
+    }
+  ],
+  "components": {
+    "schemas": {
+      "Provider": {
+        "type": "string",
+        "enum": [
+          "cloudflare-free",
+          "cloudflare-paid",
+          "own-hardware"
+        ]
+      },
+      "AdapterKind": {
+        "type": "string",
+        "enum": [
+          "cloudflare",
+          "node"
+        ],
+        "description": "cloudflare for the Cloudflare providers, node for own-hardware."
+      },
+      "Region": {
+        "type": "string",
+        "description": "any; on Cloudflare a jurisdiction (eu, us, fedramp) or a location hint (wnam, enam, sam, weur, eeur, apac, apac-ne, apac-se, oc, afr, me); on own hardware any slug.",
+        "pattern": "^[a-z][a-z0-9-]{0,63}$"
+      },
+      "ServerSettings": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "$ref": "#/components/schemas/Provider"
+          },
+          "accountReference": {
+            "type": "string",
+            "description": "Name of the secret holding the Cloudflare account in the release pipeline's secret store, never a value. Required on the Cloudflare providers, refused on own-hardware; an empty string counts as absent.",
+            "pattern": "^[A-Za-z][A-Za-z0-9_./-]{0,127}$|^$"
+          },
+          "allowedOrigins": {
+            "description": "Web origins that may call the server: a list, or text separated by spaces. Each is an origin with no path or wildcard; https, or http only for localhost and 127.0.0.1. A trailing slash is dropped.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          },
+          "roomPrefix": {
+            "type": "string",
+            "description": "Prefix of room names, and of video room names when video is connected (slug).",
+            "pattern": "^[a-z][a-z0-9-]{0,63}$"
+          },
+          "region": {
+            "$ref": "#/components/schemas/Region",
+            "description": "Defaults to any."
+          }
+        },
+        "required": [
+          "provider",
+          "roomPrefix"
+        ],
+        "additionalProperties": false
+      },
+      "ResolvedServerSettings": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "$ref": "#/components/schemas/Provider"
+          },
+          "adapter": {
+            "$ref": "#/components/schemas/AdapterKind"
+          },
+          "accountReference": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[A-Za-z][A-Za-z0-9_./-]{0,127}$"
+          },
+          "allowedOrigins": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^https://[a-z0-9.-]+(:[0-9]{1,5})?$|^http://(localhost|127\\.0\\.0\\.1)(:[0-9]{1,5})?$"
+            },
+            "description": "Distinct origins, host in lower case.",
+            "uniqueItems": true
+          },
+          "roomPrefix": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]{0,63}$"
+          },
+          "region": {
+            "$ref": "#/components/schemas/Region"
+          }
+        },
+        "required": [
+          "provider",
+          "adapter",
+          "accountReference",
+          "allowedOrigins",
+          "roomPrefix",
+          "region"
+        ],
+        "additionalProperties": false
+      },
+      "HostSettings": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "$ref": "#/components/schemas/Provider"
+          },
+          "accountReference": {
+            "type": "string",
+            "description": "The name of the account secret, or none when no account is used (own hardware)."
+          },
+          "allowedOrigins": {
+            "type": "string",
+            "description": "One web address (default http://localhost:5173)."
+          },
+          "roomPrefix": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]{0,63}$"
+          },
+          "region": {
+            "$ref": "#/components/schemas/Region"
+          }
+        },
+        "required": [
+          "provider",
+          "accountReference",
+          "allowedOrigins",
+          "roomPrefix",
+          "region"
+        ],
+        "additionalProperties": false,
+        "description": "The values aepm renders into host-settings.ts from the collected settings; every field is present."
+      },
+      "RoomsSettings": {
+        "type": "object",
+        "properties": {
+          "applicationId": {
+            "type": "string",
+            "description": "Defaults to roomPrefix without its trailing dashes."
+          },
+          "allowedOrigins": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "roomPrefix": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]{0,63}$"
+          }
+        },
+        "required": [
+          "applicationId",
+          "allowedOrigins",
+          "roomPrefix"
+        ],
+        "additionalProperties": false,
+        "description": "The settings shape the room service (realtime-rooms createWorker) takes."
+      },
+      "EntryOptions": {
+        "type": "object",
+        "properties": {
+          "originPatterns": {
+            "type": "array",
+            "items": {
+              "description": "JavaScript RegExp tested against the Origin header."
+            },
+            "description": "Origins matching these are also allowed, for example hosted web copies on subdomains."
+          },
+          "allowLoopback": {
+            "type": "boolean",
+            "description": "Allows http://localhost and http://127.0.0.1 on any port; defaults to true."
+          },
+          "bindings": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+            },
+            "description": "Durable Object bindings placed in the region; defaults to ROOM and DIRECTORY."
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "ObjectBinding": {
+        "type": "object",
+        "properties": {
+          "binding": {
+            "type": "string",
+            "description": "Binding name the worker reads from env, for example ROOM.",
+            "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+          },
+          "className": {
+            "type": "string",
+            "description": "Exported class name, for example Room.",
+            "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+          }
+        },
+        "required": [
+          "binding",
+          "className"
+        ],
+        "additionalProperties": false
+      },
+      "DeployOptions": {
+        "type": "object",
+        "properties": {
+          "main": {
+            "type": "string",
+            "description": "Module that default-exports the entry and exports the object classes; defaults to src/index.ts.",
+            "pattern": "^(\\.\\.?/)*[A-Za-z0-9_][A-Za-z0-9_./-]*$"
+          },
+          "workerName": {
+            "type": "string",
+            "description": "Defaults to <applicationId>-server.",
+            "pattern": "^[a-z][a-z0-9-]{0,62}$"
+          },
+          "objects": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ObjectBinding"
+            },
+            "description": "At least one, bindings distinct; defaults to ROOM/Room and DIRECTORY/Directory.",
+            "minItems": 1
+          },
+          "compatibilityDate": {
+            "type": "string",
+            "description": "YYYY-MM-DD; defaults to 2026-10-01.",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+          },
+          "variables": {
+            "type": "object",
+            "description": "Extra plain variables written into the deployment, never secrets.",
+            "propertyNames": {
+              "pattern": "^[A-Z][A-Z0-9_]{0,63}$"
+            },
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "cpuMilliseconds": {
+            "type": "integer",
+            "description": "cloudflare-paid only: CPU milliseconds per request.",
+            "minimum": 1,
+            "maximum": 300000
+          },
+          "hostPath": {
+            "type": "string",
+            "description": "Folder of this component's server sources relative to the start script (own hardware); defaults to ../components/server-host/server.",
+            "pattern": "^(\\.\\.?/)*[A-Za-z0-9_][A-Za-z0-9_./-]*$"
+          },
+          "devPort": {
+            "type": "integer",
+            "description": "Defaults to 8788.",
+            "minimum": 0,
+            "maximum": 65535
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "DeployFiles": {
+        "description": "Output path relative to the server project folder to file text: wrangler.jsonc, deploy.sh and package.json on Cloudflare; start.ts and package.json on own hardware.",
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "wrangler.jsonc": {
+                "type": "string"
+              },
+              "deploy.sh": {
+                "type": "string"
+              },
+              "package.json": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "wrangler.jsonc",
+              "deploy.sh",
+              "package.json"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "start.ts": {
+                "type": "string"
+              },
+              "package.json": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "start.ts",
+              "package.json"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "ServerHost": {
+        "type": "object",
+        "description": "The host for one set of settings; the functions are listed as ServerHost.* methods.",
+        "required": [
+          "settings",
+          "adapter",
+          "roomsSettings",
+          "entry",
+          "objectClass",
+          "deployFiles"
+        ],
+        "properties": {
+          "settings": {
+            "$ref": "#/components/schemas/ResolvedServerSettings"
+          },
+          "adapter": {
+            "$ref": "#/components/schemas/AdapterKind"
+          },
+          "roomsSettings": {
+            "description": "Function (applicationId?: string) => RoomsSettings."
+          },
+          "entry": {
+            "description": "Function (worker: Worker, options?: EntryOptions) => Worker."
+          },
+          "objectClass": {
+            "description": "Function (Base: class) => class."
+          },
+          "deployFiles": {
+            "description": "Function (options?: DeployOptions) => DeployFiles."
+          }
+        },
+        "additionalProperties": false
+      },
+      "NodeServeOptions": {
+        "type": "object",
+        "required": [
+          "entry",
+          "objects"
+        ],
+        "properties": {
+          "entry": {
+            "description": "Worker: an object with fetch(request: Request, env) => Promise<Response>."
+          },
+          "objects": {
+            "type": "object",
+            "additionalProperties": {
+              "description": "A Durable Object class: new (ctx, env) with optional fetch, alarm, webSocketMessage, webSocketClose and webSocketError."
+            },
+            "description": "Durable Object classes by binding name, for example { ROOM: Room, DIRECTORY: Directory }."
+          },
+          "variables": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Plain variables the worker and objects read, for example CODE_VERSION, WEB_ORIGINS."
+          },
+          "port": {
+            "type": "integer",
+            "description": "Defaults to 0 (any free port).",
+            "minimum": 0,
+            "maximum": 65535
+          },
+          "host": {
+            "type": "string",
+            "description": "Defaults to 127.0.0.1."
+          },
+          "dataDirectory": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Where object storage is kept; null or absent keeps it in memory only."
+          },
+          "maxMessageBytes": {
+            "type": "integer",
+            "description": "Largest WebSocket message accepted; defaults to 1048576.",
+            "minimum": 1
+          }
+        },
+        "additionalProperties": false
+      },
+      "RunningNodeServer": {
+        "type": "object",
+        "required": [
+          "port",
+          "host",
+          "runtime",
+          "close"
+        ],
+        "properties": {
+          "port": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 65535
+          },
+          "host": {
+            "type": "string"
+          },
+          "runtime": {
+            "description": "ObjectRuntime holding the live objects."
+          },
+          "close": {
+            "description": "Function () => Promise<void> that stops the objects and the server."
+          }
+        },
+        "additionalProperties": false
+      },
+      "ObjectRecord": {
+        "type": "object",
+        "properties": {
+          "namespace": {
+            "type": "string",
+            "description": "Binding name, for example ROOM.",
+            "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+          },
+          "name": {
+            "type": "string",
+            "description": "Object name passed to getByName.",
+            "minLength": 1
+          },
+          "storage": {
+            "type": "object",
+            "additionalProperties": {},
+            "description": "Key to JSON value, as stored by storage.put."
+          },
+          "alarm": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "description": "Milliseconds since the epoch of the pending alarm, or null."
+          }
+        },
+        "required": [
+          "namespace",
+          "name",
+          "storage",
+          "alarm"
+        ],
+        "additionalProperties": false
+      },
+      "StorageCheck": {
+        "type": "object",
+        "properties": {
+          "counts": {
+            "type": "boolean",
+            "description": "Both lists have the same length."
+          },
+          "checksums": {
+            "type": "boolean",
+            "description": "Every expected object is present with the same digest."
+          },
+          "sample": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "<namespace>/<name>"
+            },
+            "description": "The first sample expected keys, for read-back."
+          }
+        },
+        "required": [
+          "counts",
+          "checksums",
+          "sample"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "errors": {
+      "SettingsError": {
+        "code": 1,
+        "message": "SettingsError",
+        "data": {
+          "type": "string",
+          "description": "Names the setting or option and what it must be."
+        }
+      },
+      "PlacementError": {
+        "code": 2,
+        "message": "Region placement failed",
+        "data": {
+          "type": "string",
+          "description": "binding <name> cannot be restricted to jurisdiction <region>, or unknown region <region>."
+        }
+      },
+      "StorageFormatError": {
+        "code": 3,
+        "message": "Not a valid ae/object-storage 1.0.0 export",
+        "data": {
+          "type": "string",
+          "description": "Wrong header, unknown line type, checksum mismatch, duplicate object, invalid namespace, object count mismatch, or a JSON parse error."
+        }
+      },
+      "ObjectExists": {
+        "code": 4,
+        "message": "Object already exists",
+        "data": {
+          "type": "string",
+          "description": "object <namespace>/<name> already exists"
+        }
+      }
+    }
   }
 }

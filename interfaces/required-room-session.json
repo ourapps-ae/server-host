@@ -1,0 +1,753 @@
+{
+  "openrpc": "1.3.2",
+  "info": {
+    "title": "ae/room-session",
+    "version": "1.0.0",
+    "description": "Persistent private game rooms on Cloudflare Durable Objects and the clients that reach them. Server: createRoomClass and createWorker (server/index.ts, server/worker.ts; constants POLL_MS 25000, MAX_DISPLAYS 6, DISPLAY_IDLE_MS 3600000, LIVE_MS 75000). Clients: Live (web/live.ts), LiveConnection (Swift), RoomTransport (Kotlin). The HTTP routes are in interfaces/room-session-http.json (OpenAPI 3.1.1) and the live messages in interfaces/room-session-live.json (AsyncAPI 3.1.0). The directory object is not provided here: rooms call the DIRECTORY namespace, which the application binds to room-directory's createDirectoryClass.",
+    "license": {
+      "name": "Apache-2.0",
+      "url": "https://www.apache.org/licenses/LICENSE-2.0"
+    }
+  },
+  "methods": [
+    {
+      "name": "createRoomClass",
+      "description": "The Room Durable Object class for a game: persists state before notifying, keeps each room's identity book, long-polls, accepts live connections, wakes on the adapter's alarms and posts the room's summary to the directory when names or status change.",
+      "params": [
+        {
+          "name": "adapter",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/GameAdapter"
+          }
+        },
+        {
+          "name": "services",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/Services"
+          }
+        },
+        {
+          "name": "settings",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/Settings"
+          }
+        }
+      ],
+      "result": {
+        "name": "Room",
+        "schema": {
+          "$ref": "#/components/schemas/RoomClass"
+        }
+      },
+      "errors": [
+        {
+          "$ref": "#/components/errors/MissingIdentity"
+        }
+      ],
+      "tags": [
+        {
+          "name": "typescript"
+        }
+      ]
+    },
+    {
+      "name": "createWorker",
+      "description": "The worker entry: CORS for allowed origins (exposing x-rotated-token), health at / and /health, the application's own service routes, /rooms and /rooms/ws forwarded to the directory, and /r/<room>/... forwarded to the room object for the listed room ids.",
+      "params": [
+        {
+          "name": "settings",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/Settings"
+          }
+        },
+        {
+          "name": "roomIds",
+          "description": "Room ids served under /r/<id>/.",
+          "required": true,
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z-]+$"
+            }
+          }
+        },
+        {
+          "name": "service",
+          "required": false,
+          "schema": {
+            "description": "Function (request: Request, env: RoomEnv) => Promise<Response | null>; null passes the request on."
+          }
+        }
+      ],
+      "result": {
+        "name": "worker",
+        "schema": {
+          "$ref": "#/components/schemas/Worker"
+        }
+      },
+      "tags": [
+        {
+          "name": "typescript"
+        }
+      ]
+    },
+    {
+      "name": "json",
+      "description": "A JSON Response with content-type application/json and cache-control no-store.",
+      "params": [
+        {
+          "name": "body",
+          "required": true,
+          "schema": {}
+        },
+        {
+          "name": "status",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "description": "Defaults to 200."
+          }
+        }
+      ],
+      "result": {
+        "name": "response",
+        "schema": {
+          "description": "Fetch API Response."
+        }
+      },
+      "tags": [
+        {
+          "name": "typescript"
+        }
+      ]
+    },
+    {
+      "name": "Live",
+      "description": "A live connection for a room or the home list that reconnects by itself (1 s doubling to 30 s), pings every 25 s and counts 70 s of silence as lost.",
+      "params": [
+        {
+          "name": "baseUrl",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "description": "http or https address; the scheme becomes ws or wss."
+          }
+        },
+        {
+          "name": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "description": "For example /r/<room>/ws or /rooms/ws."
+          }
+        },
+        {
+          "name": "hello",
+          "required": true,
+          "schema": {
+            "description": "Function () => string | null, the first message sent on every open."
+          }
+        },
+        {
+          "name": "onMessage",
+          "required": true,
+          "schema": {
+            "description": "Function (message: LiveMessage) => void."
+          }
+        },
+        {
+          "name": "onDown",
+          "required": false,
+          "schema": {
+            "description": "Function (down: boolean) => void; true after an attempt failed, false once one opens."
+          }
+        }
+      ],
+      "result": {
+        "name": "live",
+        "schema": {
+          "description": "Live instance."
+        }
+      },
+      "tags": [
+        {
+          "name": "typescript"
+        }
+      ]
+    },
+    {
+      "name": "Live.open",
+      "description": "Starts connecting; does nothing when already open.",
+      "params": [],
+      "result": {
+        "name": "none",
+        "description": "Returns nothing.",
+        "schema": {
+          "type": "null"
+        }
+      },
+      "tags": [
+        {
+          "name": "typescript"
+        }
+      ]
+    },
+    {
+      "name": "Live.close",
+      "description": "Closes with code 1000, which the server takes as this device leaving.",
+      "params": [],
+      "result": {
+        "name": "none",
+        "description": "Returns nothing.",
+        "schema": {
+          "type": "null"
+        }
+      },
+      "tags": [
+        {
+          "name": "typescript"
+        }
+      ]
+    },
+    {
+      "name": "Live.send",
+      "description": "Sends text when connected; drops it otherwise.",
+      "params": [
+        {
+          "name": "message",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "result": {
+        "name": "none",
+        "description": "Returns nothing.",
+        "schema": {
+          "type": "null"
+        }
+      },
+      "tags": [
+        {
+          "name": "typescript"
+        }
+      ]
+    },
+    {
+      "name": "LiveConnection.init",
+      "description": "Swift @MainActor LiveConnection<Message>: the same reconnecting connection with injected decoding.",
+      "params": [
+        {
+          "name": "url",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "description": "WebSocket URL."
+          }
+        },
+        {
+          "name": "hello",
+          "required": true,
+          "schema": {
+            "description": "Function () -> String?."
+          }
+        },
+        {
+          "name": "decode",
+          "required": true,
+          "schema": {
+            "description": "Function (Data) throws -> Message."
+          }
+        },
+        {
+          "name": "onDown",
+          "required": false,
+          "schema": {
+            "description": "Function (Bool) -> Void."
+          }
+        },
+        {
+          "name": "onMessage",
+          "required": true,
+          "schema": {
+            "description": "Function (Message) -> Void."
+          }
+        }
+      ],
+      "result": {
+        "name": "connection",
+        "schema": {
+          "description": "LiveConnection<Message>."
+        }
+      },
+      "tags": [
+        {
+          "name": "swift"
+        }
+      ]
+    },
+    {
+      "name": "LiveConnection.open",
+      "description": "Starts connecting; does nothing when already open.",
+      "params": [],
+      "result": {
+        "name": "none",
+        "description": "Returns nothing.",
+        "schema": {
+          "type": "null"
+        }
+      },
+      "tags": [
+        {
+          "name": "swift"
+        }
+      ]
+    },
+    {
+      "name": "LiveConnection.close",
+      "description": "Closes normally, which the server takes as this device leaving.",
+      "params": [],
+      "result": {
+        "name": "none",
+        "description": "Returns nothing.",
+        "schema": {
+          "type": "null"
+        }
+      },
+      "tags": [
+        {
+          "name": "swift"
+        }
+      ]
+    },
+    {
+      "name": "LiveConnection.send",
+      "description": "Sends text on the current connection.",
+      "params": [
+        {
+          "name": "text",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "result": {
+        "name": "none",
+        "description": "Returns nothing.",
+        "schema": {
+          "type": "null"
+        }
+      },
+      "tags": [
+        {
+          "name": "swift"
+        }
+      ]
+    },
+    {
+      "name": "RoomTransport.init",
+      "description": "Kotlin RoomTransport(baseUrl) over OkHttp; the scheme becomes ws or wss.",
+      "params": [
+        {
+          "name": "baseUrl",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "result": {
+        "name": "transport",
+        "schema": {
+          "description": "RoomTransport."
+        }
+      },
+      "tags": [
+        {
+          "name": "kotlin"
+        }
+      ]
+    },
+    {
+      "name": "RoomTransport.connect",
+      "description": "A cold Flow<String> of text messages (pong dropped) on one connection that sends hello on open, pings every 25 s, and ends with LiveClosed(code) carrying the server's close code or with the failure.",
+      "params": [
+        {
+          "name": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "hello",
+          "required": true,
+          "schema": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        {
+          "name": "opened",
+          "required": false,
+          "schema": {
+            "description": "Function (WebSocket?) -> Unit; the socket on open, null when the flow ends."
+          }
+        }
+      ],
+      "result": {
+        "name": "messages",
+        "schema": {
+          "description": "kotlinx.coroutines.flow.Flow<String>."
+        }
+      },
+      "tags": [
+        {
+          "name": "kotlin"
+        }
+      ]
+    }
+  ],
+  "components": {
+    "schemas": {
+      "Settings": {
+        "type": "object",
+        "properties": {
+          "applicationId": {
+            "type": "string",
+            "description": "Reported by the health answer."
+          },
+          "allowedOrigins": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "Exact origin."
+            },
+            "description": "Origins allowed to call the worker; WEB_ORIGINS and loopback http origins are allowed as well."
+          },
+          "roomPrefix": {
+            "type": "string",
+            "description": "Prefix of room names including its separator; passed to the video grant."
+          }
+        },
+        "required": [
+          "applicationId",
+          "allowedOrigins",
+          "roomPrefix"
+        ],
+        "additionalProperties": false
+      },
+      "RoomInfo": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Room id."
+          },
+          "status": {
+            "type": "string",
+            "description": "Game status, as the adapter's summary gives it."
+          },
+          "playerCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "names": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Player names."
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "playerCount",
+          "names"
+        ],
+        "additionalProperties": false
+      },
+      "Actor": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "player",
+              "spectator",
+              "display"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "role"
+        ],
+        "additionalProperties": false
+      },
+      "Presence": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "request-seen"
+              },
+              "id": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "id"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "live-members"
+              },
+              "ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "ids"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "away"
+              },
+              "id": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "id"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "last-connection-close"
+              },
+              "id": {
+                "type": "string"
+              },
+              "deliberate": {
+                "type": "boolean",
+                "description": "True for close codes 1000 and 1001."
+              }
+            },
+            "required": [
+              "type",
+              "id",
+              "deliberate"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "Deps": {
+        "type": "object",
+        "required": [
+          "now",
+          "rng",
+          "newId"
+        ],
+        "properties": {
+          "now": {
+            "description": "Function () => number, milliseconds since the epoch."
+          },
+          "rng": {
+            "description": "Function () => number in [0, 1)."
+          },
+          "newId": {
+            "description": "Function () => string, eight characters."
+          }
+        }
+      },
+      "GameAdapter": {
+        "type": "object",
+        "description": "The ae/game-adapter interface (GameAdapter<S, A, V, O> in server/adapter.ts) the room calls; provided by turn-engine.",
+        "required": [
+          "create",
+          "restore",
+          "options",
+          "members",
+          "summary",
+          "clearSpectators",
+          "join",
+          "parseAction",
+          "apply",
+          "presence",
+          "connection",
+          "advance",
+          "nextWake",
+          "view"
+        ],
+        "properties": {
+          "create": {
+            "description": "Function GameAdapter.create."
+          },
+          "restore": {
+            "description": "Function GameAdapter.restore."
+          },
+          "options": {
+            "description": "Function GameAdapter.options."
+          },
+          "members": {
+            "description": "Function GameAdapter.members."
+          },
+          "summary": {
+            "description": "Function GameAdapter.summary."
+          },
+          "clearSpectators": {
+            "description": "Function GameAdapter.clearSpectators."
+          },
+          "join": {
+            "description": "Function GameAdapter.join."
+          },
+          "parseAction": {
+            "description": "Function GameAdapter.parseAction."
+          },
+          "apply": {
+            "description": "Function GameAdapter.apply."
+          },
+          "presence": {
+            "description": "Function GameAdapter.presence."
+          },
+          "connection": {
+            "description": "Function GameAdapter.connection."
+          },
+          "advance": {
+            "description": "Function GameAdapter.advance."
+          },
+          "nextWake": {
+            "description": "Function GameAdapter.nextWake."
+          },
+          "view": {
+            "description": "Function GameAdapter.view."
+          }
+        }
+      },
+      "IdentityService": {
+        "type": "object",
+        "description": "The ae/guest-identity calls a room makes (IdentityService in server/adapter.ts); createIdentityApi(settings) of guest-identity satisfies it.",
+        "required": [
+          "claim",
+          "authenticate",
+          "release"
+        ],
+        "properties": {
+          "claim": {
+            "description": "Function IdentityApi.claim."
+          },
+          "authenticate": {
+            "description": "Function IdentityApi.authenticate."
+          },
+          "release": {
+            "description": "Function IdentityApi.release."
+          }
+        }
+      },
+      "Services": {
+        "type": "object",
+        "required": [
+          "identity"
+        ],
+        "properties": {
+          "identity": {
+            "$ref": "#/components/schemas/IdentityService"
+          },
+          "videoGrant": {
+            "description": "Function (request: Request) => Promise<Response>; receives POST https://service/grant with JSON {roomId, roomPrefix, playerId, name, now, canPublish} on every join, and its JSON answer is returned as video."
+          }
+        },
+        "additionalProperties": false
+      },
+      "RoomEnv": {
+        "type": "object",
+        "description": "Worker and object bindings.",
+        "required": [
+          "DIRECTORY",
+          "ROOM"
+        ],
+        "properties": {
+          "CODE_VERSION": {
+            "type": "string",
+            "description": "Deployment version; a request from another version resets the object."
+          },
+          "POLL_MS": {
+            "type": "string",
+            "description": "Long-poll wait in milliseconds; defaults to 25000."
+          },
+          "DIRECTORY": {
+            "description": "Durable Object namespace bound to room-directory's Directory class; the object named home receives POST https://directory/ with RoomInfo, GET https://directory/ and GET https://directory/ws."
+          },
+          "ROOM": {
+            "description": "Durable Object namespace bound to the Room class."
+          },
+          "WEB_ORIGINS": {
+            "type": "string",
+            "description": "Extra allowed origins, comma-separated."
+          }
+        }
+      },
+      "Worker": {
+        "description": "An object with fetch(request: Request, env: RoomEnv) => Promise<Response>."
+      },
+      "RoomClass": {
+        "description": "class Room extends DurableObject<RoomEnv>; export it from the worker module as Room and bind it as ROOM. It serves the routes in interfaces/room-session-http.json and the live messages in interfaces/room-session-live.json."
+      },
+      "LiveMessage": {
+        "type": "object",
+        "required": [
+          "type"
+        ],
+        "properties": {
+          "type": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true,
+        "description": "A message from the server: a string type and application-owned fields."
+      }
+    },
+    "errors": {
+      "MissingIdentity": {
+        "code": 1,
+        "message": "TypeError",
+        "data": {
+          "const": "createRoomClass needs services.identity, the guest-identity component (createIdentityApi(settings))"
+        }
+      }
+    }
+  }
+}

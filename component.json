@@ -1,353 +1,90 @@
 {
-  "format": 1,
-  "kind": "component",
-  "identity": {
-    "name": "ourapps-ae/server-host",
-    "version": "0.4.0",
-    "sourceRevision": "19905b75dbea89fbfd424d67fe26c81aaed0e018",
-    "sourceTreeDigest": "0000000000000000000000000000000000000000000000000000000000000000",
-    "licenceStatus": "deferred"
-  },
-  "facilities": [
-    {
-      "id": "server-host",
-      "description": "Hosting for the application's room service on Cloudflare or own hardware"
-    }
-  ],
-  "documents": {
-    "contract": "CONTRACT.md",
-    "interfaces": [
-      "interfaces/object-storage.schema.json",
-      "interfaces/required/room-directory.json",
-      "interfaces/required/room-session.json",
-      "interfaces/server-host.json",
-      "suitability.json",
-      "migration.json"
-    ],
-    "examples": [
-      "examples/rendered-host-settings.ts",
-      "examples/service.ts",
-      "examples/start-own-hardware.ts",
-      "examples/worker.ts"
-    ],
-    "licenceNotice": "LICENCE"
-  },
-  "collect": [
-    {
-      "id": "provider",
-      "type": "string",
-      "grammar": "slug",
-      "required": true,
-      "secret": false
-    },
-    {
-      "id": "accountReference",
-      "type": "string",
-      "grammar": "slug",
-      "required": false,
-      "secret": false,
-      "default": "none"
-    },
-    {
-      "id": "allowedOrigins",
-      "type": "string",
-      "grammar": "address",
-      "required": false,
-      "secret": false,
-      "default": "http://localhost:5173"
-    },
-    {
-      "id": "roomPrefix",
-      "type": "string",
-      "grammar": "slug",
-      "required": true,
-      "secret": false
-    },
-    {
-      "id": "region",
-      "type": "string",
-      "grammar": "slug",
-      "required": false,
-      "secret": false,
-      "default": "any"
-    }
-  ],
-  "files": [
-    {
-      "path": "CONTRACT.md",
-      "executable": false
-    },
-    {
-      "path": "INSTRUCTIONS.md",
-      "executable": false
-    },
-    {
-      "path": "LICENCE",
-      "executable": false
-    },
-    {
-      "path": "SOURCE.md",
-      "executable": false
-    },
-    {
-      "path": "examples/rendered-host-settings.ts",
-      "executable": false
-    },
-    {
-      "path": "examples/service.ts",
-      "executable": false
-    },
-    {
-      "path": "examples/start-own-hardware.ts",
-      "executable": false
-    },
-    {
-      "path": "examples/worker.ts",
-      "executable": false
-    },
-    {
-      "path": "implementation/server/deploy.ts",
-      "executable": false
-    },
-    {
-      "path": "implementation/server/entry.ts",
-      "executable": false
-    },
-    {
-      "path": "implementation/server/host-settings.ts",
-      "executable": false
-    },
-    {
-      "path": "implementation/server/host.ts",
-      "executable": false
-    },
-    {
-      "path": "implementation/server/node/globals.ts",
-      "executable": false
-    },
-    {
-      "path": "implementation/server/node/loader.ts",
-      "executable": false
-    },
-    {
-      "path": "implementation/server/node/register.ts",
-      "executable": false
-    },
-    {
-      "path": "implementation/server/node/runtime.ts",
-      "executable": false
-    },
-    {
-      "path": "implementation/server/node/serve.ts",
-      "executable": false
-    },
-    {
-      "path": "implementation/server/node/storage-export.ts",
-      "executable": false
-    },
-    {
-      "path": "implementation/server/node/websocket.ts",
-      "executable": false
-    },
-    {
-      "path": "implementation/server/node/workers-shim.ts",
-      "executable": false
-    },
-    {
-      "path": "implementation/server/region.ts",
-      "executable": false
-    },
-    {
-      "path": "implementation/server/settings.ts",
-      "executable": false
-    },
-    {
-      "path": "interfaces/object-storage.schema.json",
-      "executable": false
-    },
-    {
-      "path": "interfaces/required/room-directory.json",
-      "executable": false
-    },
-    {
-      "path": "interfaces/required/room-session.json",
-      "executable": false
-    },
-    {
-      "path": "interfaces/server-host.json",
-      "executable": false
-    },
-    {
-      "path": "migration.json",
-      "executable": false
-    },
-    {
-      "path": "suitability.json",
-      "executable": false
-    },
-    {
-      "path": "tests/fixtures/host-settings-collect.json",
-      "executable": false
-    },
-    {
-      "path": "tests/fixtures/settings.json",
-      "executable": false
-    },
-    {
-      "path": "tests/render-template.ts",
-      "executable": false
-    },
-    {
-      "path": "tests/web.test.ts",
-      "executable": false
-    },
-    {
-      "path": "tools.lock.json",
-      "executable": false
-    },
-    {
-      "path": "visual/definition.json",
-      "executable": false
-    },
-    {
-      "path": "visual/examples/connected.json",
-      "executable": false
-    },
-    {
-      "path": "visual/output/connected.png",
-      "executable": false
-    },
-    {
-      "path": "visual/output/connected.svg",
-      "executable": false
-    },
-    {
-      "path": "visual/output/description.md",
-      "executable": false
-    }
-  ],
   "artefacts": [
     {
-      "source": "implementation/server/deploy.ts",
       "destination": "components/server-host/server/deploy.ts",
-      "template": false,
-      "executable": false
+      "executable": false,
+      "source": "implementation/server/deploy.ts",
+      "template": false
     },
     {
-      "source": "implementation/server/entry.ts",
       "destination": "components/server-host/server/entry.ts",
-      "template": false,
-      "executable": false
+      "executable": false,
+      "source": "implementation/server/entry.ts",
+      "template": false
     },
     {
-      "source": "implementation/server/host-settings.ts",
       "destination": "components/server-host/server/host-settings.ts",
-      "template": true,
-      "executable": false
+      "executable": false,
+      "source": "implementation/server/host-settings.ts",
+      "template": true
     },
     {
-      "source": "implementation/server/host.ts",
       "destination": "components/server-host/server/host.ts",
-      "template": false,
-      "executable": false
+      "executable": false,
+      "source": "implementation/server/host.ts",
+      "template": false
     },
     {
-      "source": "implementation/server/node/globals.ts",
       "destination": "components/server-host/server/node/globals.ts",
-      "template": false,
-      "executable": false
+      "executable": false,
+      "source": "implementation/server/node/globals.ts",
+      "template": false
     },
     {
-      "source": "implementation/server/node/loader.ts",
       "destination": "components/server-host/server/node/loader.ts",
-      "template": false,
-      "executable": false
+      "executable": false,
+      "source": "implementation/server/node/loader.ts",
+      "template": false
     },
     {
-      "source": "implementation/server/node/register.ts",
       "destination": "components/server-host/server/node/register.ts",
-      "template": false,
-      "executable": false
+      "executable": false,
+      "source": "implementation/server/node/register.ts",
+      "template": false
     },
     {
-      "source": "implementation/server/node/runtime.ts",
       "destination": "components/server-host/server/node/runtime.ts",
-      "template": false,
-      "executable": false
+      "executable": false,
+      "source": "implementation/server/node/runtime.ts",
+      "template": false
     },
     {
-      "source": "implementation/server/node/serve.ts",
       "destination": "components/server-host/server/node/serve.ts",
-      "template": false,
-      "executable": false
+      "executable": false,
+      "source": "implementation/server/node/serve.ts",
+      "template": false
     },
     {
-      "source": "implementation/server/node/storage-export.ts",
       "destination": "components/server-host/server/node/storage-export.ts",
-      "template": false,
-      "executable": false
+      "executable": false,
+      "source": "implementation/server/node/storage-export.ts",
+      "template": false
     },
     {
-      "source": "implementation/server/node/websocket.ts",
       "destination": "components/server-host/server/node/websocket.ts",
-      "template": false,
-      "executable": false
+      "executable": false,
+      "source": "implementation/server/node/websocket.ts",
+      "template": false
     },
     {
-      "source": "implementation/server/node/workers-shim.ts",
       "destination": "components/server-host/server/node/workers-shim.ts",
-      "template": false,
-      "executable": false
+      "executable": false,
+      "source": "implementation/server/node/workers-shim.ts",
+      "template": false
     },
     {
-      "source": "implementation/server/region.ts",
       "destination": "components/server-host/server/region.ts",
-      "template": false,
-      "executable": false
+      "executable": false,
+      "source": "implementation/server/region.ts",
+      "template": false
     },
     {
-      "source": "implementation/server/settings.ts",
       "destination": "components/server-host/server/settings.ts",
-      "template": false,
-      "executable": false
+      "executable": false,
+      "source": "implementation/server/settings.ts",
+      "template": false
     }
   ],
-  "dependencies": [],
-  "provides": [
-    {
-      "id": "server-host",
-      "type": "ae/server-host",
-      "version": "1.0.0",
-      "path": "interfaces/server-host.json"
-    }
-  ],
-  "requires": [
-    {
-      "id": "room-session",
-      "type": "ae/room-session",
-      "version": "1.0.0",
-      "path": "interfaces/required/room-session.json"
-    },
-    {
-      "id": "room-directory",
-      "type": "ae/room-directory",
-      "version": "1.0.0",
-      "path": "interfaces/required/room-directory.json"
-    }
-  ],
-  "visual": {
-    "definition": "visual/definition.json",
-    "examples": [
-      "visual/examples/connected.json"
-    ],
-    "outputs": [
-      "visual/output/connected.svg",
-      "visual/output/connected.png"
-    ],
-    "descriptions": [
-      "visual/output/description.md"
-    ]
-  },
   "capabilities": {
     "hosts": [],
     "secrets": [],
@@ -368,6 +105,237 @@
       "components/server-host/server/settings.ts"
     ]
   },
+  "collect": [
+    {
+      "grammar": "slug",
+      "id": "provider",
+      "required": true,
+      "secret": false,
+      "type": "string"
+    },
+    {
+      "default": "none",
+      "grammar": "slug",
+      "id": "accountReference",
+      "required": false,
+      "secret": false,
+      "type": "string"
+    },
+    {
+      "default": "http://localhost:5173",
+      "grammar": "address",
+      "id": "allowedOrigins",
+      "required": false,
+      "secret": false,
+      "type": "string"
+    },
+    {
+      "grammar": "slug",
+      "id": "roomPrefix",
+      "required": true,
+      "secret": false,
+      "type": "string"
+    },
+    {
+      "default": "any",
+      "grammar": "slug",
+      "id": "region",
+      "required": false,
+      "secret": false,
+      "type": "string"
+    }
+  ],
+  "dependencies": [],
+  "documents": {
+    "contract": "CONTRACT.md",
+    "examples": [
+      "examples/rendered-host-settings.ts",
+      "examples/service.ts",
+      "examples/start-own-hardware.ts",
+      "examples/worker.ts"
+    ],
+    "interfaces": [
+      "interfaces/object-storage.schema.json",
+      "interfaces/required-room-directory.json",
+      "interfaces/required-room-session.json",
+      "interfaces/server-host.json",
+      "migration.json",
+      "suitability.json"
+    ],
+    "licenceNotice": "LICENCE"
+  },
+  "facilities": [
+    {
+      "description": "Hosting for the application's room service on Cloudflare or own hardware",
+      "id": "server-host"
+    }
+  ],
+  "files": [
+    {
+      "executable": false,
+      "path": "CONTRACT.md"
+    },
+    {
+      "executable": false,
+      "path": "INSTRUCTIONS.md"
+    },
+    {
+      "executable": false,
+      "path": "LICENCE"
+    },
+    {
+      "executable": false,
+      "path": "NOTICE"
+    },
+    {
+      "executable": false,
+      "path": "SOURCE.md"
+    },
+    {
+      "executable": false,
+      "path": "examples/rendered-host-settings.ts"
+    },
+    {
+      "executable": false,
+      "path": "examples/service.ts"
+    },
+    {
+      "executable": false,
+      "path": "examples/start-own-hardware.ts"
+    },
+    {
+      "executable": false,
+      "path": "examples/worker.ts"
+    },
+    {
+      "executable": false,
+      "path": "implementation/server/deploy.ts"
+    },
+    {
+      "executable": false,
+      "path": "implementation/server/entry.ts"
+    },
+    {
+      "executable": false,
+      "path": "implementation/server/host-settings.ts"
+    },
+    {
+      "executable": false,
+      "path": "implementation/server/host.ts"
+    },
+    {
+      "executable": false,
+      "path": "implementation/server/node/globals.ts"
+    },
+    {
+      "executable": false,
+      "path": "implementation/server/node/loader.ts"
+    },
+    {
+      "executable": false,
+      "path": "implementation/server/node/register.ts"
+    },
+    {
+      "executable": false,
+      "path": "implementation/server/node/runtime.ts"
+    },
+    {
+      "executable": false,
+      "path": "implementation/server/node/serve.ts"
+    },
+    {
+      "executable": false,
+      "path": "implementation/server/node/storage-export.ts"
+    },
+    {
+      "executable": false,
+      "path": "implementation/server/node/websocket.ts"
+    },
+    {
+      "executable": false,
+      "path": "implementation/server/node/workers-shim.ts"
+    },
+    {
+      "executable": false,
+      "path": "implementation/server/region.ts"
+    },
+    {
+      "executable": false,
+      "path": "implementation/server/settings.ts"
+    },
+    {
+      "executable": false,
+      "path": "interfaces/object-storage.schema.json"
+    },
+    {
+      "executable": false,
+      "path": "interfaces/required-room-directory.json"
+    },
+    {
+      "executable": false,
+      "path": "interfaces/required-room-session.json"
+    },
+    {
+      "executable": false,
+      "path": "interfaces/server-host.json"
+    },
+    {
+      "executable": false,
+      "path": "migration.json"
+    },
+    {
+      "executable": false,
+      "path": "suitability.json"
+    },
+    {
+      "executable": false,
+      "path": "tests/fixtures/host-settings-collect.json"
+    },
+    {
+      "executable": false,
+      "path": "tests/fixtures/settings.json"
+    },
+    {
+      "executable": false,
+      "path": "tests/render-template.ts"
+    },
+    {
+      "executable": false,
+      "path": "tests/web.test.ts"
+    },
+    {
+      "executable": false,
+      "path": "tools.lock.json"
+    },
+    {
+      "executable": false,
+      "path": "visual/definition.json"
+    },
+    {
+      "executable": false,
+      "path": "visual/examples/connected.json"
+    },
+    {
+      "executable": false,
+      "path": "visual/output/connected.png"
+    },
+    {
+      "executable": false,
+      "path": "visual/output/connected.svg"
+    },
+    {
+      "executable": false,
+      "path": "visual/output/description.md"
+    }
+  ],
+  "format": 1,
+  "identity": {
+    "licence": "Apache-2.0",
+    "name": "ourapps-ae/server-host",
+    "sourceRevision": "19905b75dbea89fbfd424d67fe26c81aaed0e018",
+    "sourceTreeDigest": "0000000000000000000000000000000000000000000000000000000000000000",
+    "version": "0.5.0"
+  },
   "infrastructure": {
     "accounts": [
       "cloudflare"
@@ -375,36 +343,72 @@
     "costStatus": "unmeasured",
     "deployedReason": "Hosts the application's room service: a Cloudflare Workers account for cloudflare-free and cloudflare-paid, or one machine the owner runs for own-hardware. The package itself deploys nothing."
   },
+  "kind": "component",
+  "provides": [
+    {
+      "id": "server-host",
+      "path": "interfaces/server-host.json",
+      "type": "ae/server-host",
+      "version": "1.0.0"
+    }
+  ],
+  "requires": [
+    {
+      "id": "room-session",
+      "path": "interfaces/required-room-session.json",
+      "type": "ae/room-session",
+      "version": "1.0.0"
+    },
+    {
+      "id": "room-directory",
+      "path": "interfaces/required-room-directory.json",
+      "type": "ae/room-directory",
+      "version": "1.0.0"
+    }
+  ],
+  "upgrade": {
+    "migration": "files-only",
+    "policy": "patch"
+  },
   "verification": [
     {
-      "id": "web",
-      "root": "package",
       "argv": [
         "node",
         "--test",
         "tests/web.test.ts"
       ],
       "cwd": ".",
-      "prepare": [],
-      "tools": {
-        "node": "26.5.0"
-      },
+      "expectedExit": 0,
       "fixtures": [
         "tests/fixtures/host-settings-collect.json",
         "tests/fixtures/settings.json"
       ],
+      "id": "web",
       "locks": [
         "tools.lock.json"
       ],
       "network": false,
-      "timeoutSeconds": 180,
-      "expectedExit": 0,
+      "prepare": [],
+      "requirements": [],
+      "root": "package",
       "scope": "required-local",
-      "requirements": []
+      "timeoutSeconds": 180,
+      "tools": {
+        "node": "26.5.0"
+      }
     }
   ],
-  "upgrade": {
-    "policy": "patch",
-    "migration": "files-only"
+  "visual": {
+    "definition": "visual/definition.json",
+    "descriptions": [
+      "visual/output/description.md"
+    ],
+    "examples": [
+      "visual/examples/connected.json"
+    ],
+    "outputs": [
+      "visual/output/connected.svg",
+      "visual/output/connected.png"
+    ]
   }
 }

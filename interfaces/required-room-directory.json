@@ -1,0 +1,862 @@
+{
+  "openrpc": "1.3.2",
+  "info": {
+    "title": "ae/room-directory",
+    "version": "1.0.0",
+    "description": "One summary of every room for the home screens. Pure list operations (server/directory-core.ts; the same rules in Swift as static functions of enum RoomDirectory and in Kotlin as top-level functions of package ae.directory), the Directory Durable Object class (server/directory.ts, platform base class injected), the ndjson export and import of its stored list (server/directory-migration.ts) and the web watcher (web/directory-client.ts). Methods are tagged with the languages that provide them. The object's requests are in interfaces/room-directory-http.json (OpenAPI 3.1.1) and its live list in interfaces/room-directory-live.json (AsyncAPI 3.1.0).",
+    "license": {
+      "name": "Apache-2.0",
+      "url": "https://www.apache.org/licenses/LICENSE-2.0"
+    }
+  },
+  "methods": [
+    {
+      "name": "upsertRoom",
+      "description": "The rooms with entry stored under its id.",
+      "params": [
+        {
+          "name": "rooms",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/Rooms"
+          }
+        },
+        {
+          "name": "entry",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/RoomEntry"
+          }
+        }
+      ],
+      "result": {
+        "name": "rooms",
+        "schema": {
+          "$ref": "#/components/schemas/Rooms"
+        }
+      },
+      "tags": [
+        {
+          "name": "typescript"
+        }
+      ]
+    },
+    {
+      "name": "removeRoom",
+      "description": "The rooms without id.",
+      "params": [
+        {
+          "name": "rooms",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/Rooms"
+          }
+        },
+        {
+          "name": "id",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "result": {
+        "name": "rooms",
+        "schema": {
+          "$ref": "#/components/schemas/Rooms"
+        }
+      },
+      "tags": [
+        {
+          "name": "typescript"
+        }
+      ]
+    },
+    {
+      "name": "listRooms",
+      "description": "Fixed rooms first in the given order, then the others by id; only open ones with openOnly.",
+      "params": [
+        {
+          "name": "rooms",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/Rooms"
+          }
+        },
+        {
+          "name": "options",
+          "required": false,
+          "schema": {
+            "$ref": "#/components/schemas/ListOptions"
+          }
+        }
+      ],
+      "result": {
+        "name": "entries",
+        "schema": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/RoomEntry"
+          }
+        }
+      },
+      "tags": [
+        {
+          "name": "typescript"
+        }
+      ]
+    },
+    {
+      "name": "normaliseCode",
+      "description": "Upper case without whitespace or hyphens.",
+      "params": [
+        {
+          "name": "code",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "result": {
+        "name": "code",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "tags": [
+        {
+          "name": "typescript"
+        },
+        {
+          "name": "swift"
+        },
+        {
+          "name": "kotlin"
+        }
+      ]
+    },
+    {
+      "name": "findByCode",
+      "description": "The room whose code matches after normalising, or null; an empty code matches nothing.",
+      "params": [
+        {
+          "name": "rooms",
+          "description": "Native versions take a list.",
+          "required": true,
+          "schema": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Rooms"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/RoomEntry"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "code",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "result": {
+        "name": "room",
+        "schema": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/RoomEntry"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "tags": [
+        {
+          "name": "typescript"
+        },
+        {
+          "name": "swift"
+        },
+        {
+          "name": "kotlin"
+        }
+      ]
+    },
+    {
+      "name": "summary",
+      "description": "id|status|playerCount|names joined by commas: what a client compares to tell whether the list changed (a property of RoomInfo in Swift and Kotlin).",
+      "params": [
+        {
+          "name": "room",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/RoomEntry"
+          }
+        }
+      ],
+      "result": {
+        "name": "summary",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "tags": [
+        {
+          "name": "typescript"
+        }
+      ]
+    },
+    {
+      "name": "listingChanged",
+      "description": "True when previous is null or the summaries differ.",
+      "params": [
+        {
+          "name": "previous",
+          "required": true,
+          "schema": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/RoomEntry"
+            }
+          }
+        },
+        {
+          "name": "next",
+          "required": true,
+          "schema": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RoomEntry"
+            }
+          }
+        }
+      ],
+      "result": {
+        "name": "changed",
+        "schema": {
+          "type": "boolean"
+        }
+      },
+      "tags": [
+        {
+          "name": "typescript"
+        },
+        {
+          "name": "swift"
+        },
+        {
+          "name": "kotlin"
+        }
+      ]
+    },
+    {
+      "name": "announcement",
+      "description": "The live message {type: rooms, rooms} as JSON text.",
+      "params": [
+        {
+          "name": "rooms",
+          "required": true,
+          "schema": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RoomEntry"
+            }
+          }
+        }
+      ],
+      "result": {
+        "name": "message",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "tags": [
+        {
+          "name": "typescript"
+        }
+      ]
+    },
+    {
+      "name": "entryAction",
+      "description": "rejoin when myName is seated; else full when open and playerCount reaches capacity; watch a game under way; join an open room; none without a room. Swift: RoomDirectory.entryAction(_:myName:capacity:openStatuses:).",
+      "params": [
+        {
+          "name": "room",
+          "required": true,
+          "schema": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RoomEntry"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        {
+          "name": "myName",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "capacity",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        {
+          "name": "openStatuses",
+          "description": "Statuses that count as open; defaults to [lobby].",
+          "required": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      ],
+      "result": {
+        "name": "action",
+        "schema": {
+          "$ref": "#/components/schemas/EntryAction"
+        }
+      },
+      "tags": [
+        {
+          "name": "typescript"
+        },
+        {
+          "name": "swift"
+        },
+        {
+          "name": "kotlin"
+        }
+      ]
+    },
+    {
+      "name": "describeRoom",
+      "description": "empty with no players, lobby when open, else inGame; with the names.",
+      "params": [
+        {
+          "name": "room",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/RoomEntry"
+          }
+        },
+        {
+          "name": "openStatuses",
+          "description": "Statuses that count as open; defaults to [lobby].",
+          "required": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      ],
+      "result": {
+        "name": "description",
+        "description": "Kotlin returns the RoomKind only.",
+        "schema": {
+          "$ref": "#/components/schemas/RoomDescription"
+        }
+      },
+      "tags": [
+        {
+          "name": "typescript"
+        },
+        {
+          "name": "kotlin"
+        }
+      ]
+    },
+    {
+      "name": "RoomDirectory.describe",
+      "description": "The kind of describeRoom.",
+      "params": [
+        {
+          "name": "room",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/RoomEntry"
+          }
+        },
+        {
+          "name": "openStatuses",
+          "description": "Statuses that count as open; defaults to [lobby].",
+          "required": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      ],
+      "result": {
+        "name": "kind",
+        "schema": {
+          "$ref": "#/components/schemas/RoomKind"
+        }
+      },
+      "tags": [
+        {
+          "name": "swift"
+        }
+      ]
+    },
+    {
+      "name": "createDirectoryClass",
+      "description": "The Directory Durable Object class: keeps the list in storage, answers ping with pong without waking, restarts onto new code when a caller's x-code-version differs, asks fixed rooms missing from the list, and sends the whole list to every watcher after each change.",
+      "params": [
+        {
+          "name": "DurableObjectBase",
+          "required": true,
+          "schema": {
+            "description": "The platform's Durable Object base class (cloudflare:workers DurableObject, or server-host's Node stand-in)."
+          }
+        },
+        {
+          "name": "options",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/DirectoryOptions"
+          }
+        }
+      ],
+      "result": {
+        "name": "Directory",
+        "schema": {
+          "$ref": "#/components/schemas/DirectoryClass"
+        }
+      },
+      "tags": [
+        {
+          "name": "typescript"
+        }
+      ]
+    },
+    {
+      "name": "watchRooms",
+      "description": "Opens a live connection through connect (the Live class of realtime-rooms has this shape) and reports the list only when it changed, and whether the server is down.",
+      "params": [
+        {
+          "name": "connect",
+          "required": true,
+          "schema": {
+            "description": "Function (path: string, hello: () => string | null, onMessage: (message) => void, onDown: (down: boolean) => void) => { open(): void; close(): void }."
+          }
+        },
+        {
+          "name": "onChange",
+          "required": true,
+          "schema": {
+            "description": "Function (state: RoomWatch) => void."
+          }
+        },
+        {
+          "name": "path",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "description": "Defaults to /rooms/ws."
+          }
+        }
+      ],
+      "result": {
+        "name": "watcher",
+        "schema": {
+          "$ref": "#/components/schemas/RoomWatcher"
+        }
+      },
+      "tags": [
+        {
+          "name": "typescript"
+        }
+      ]
+    },
+    {
+      "name": "roomForCode",
+      "description": "findByCode over the watched list, or null before the first list.",
+      "params": [
+        {
+          "name": "watch",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/RoomWatch"
+          }
+        },
+        {
+          "name": "code",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "result": {
+        "name": "room",
+        "schema": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/RoomEntry"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "tags": [
+        {
+          "name": "typescript"
+        }
+      ]
+    },
+    {
+      "name": "exportAll",
+      "description": "ndjson (ae/room-directory-state 1.0.0): a header line, then one room line per room by id with a sha256 over its canonical JSON.",
+      "params": [
+        {
+          "name": "rooms",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/Rooms"
+          }
+        }
+      ],
+      "result": {
+        "name": "text",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "tags": [
+        {
+          "name": "typescript"
+        }
+      ]
+    },
+    {
+      "name": "importAll",
+      "description": "The rooms of an export after checking header, line types, checksums, duplicates, entries and count; the caller stores them with storage.put(\"rooms\", rooms).",
+      "params": [
+        {
+          "name": "text",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "result": {
+        "name": "rooms",
+        "schema": {
+          "$ref": "#/components/schemas/Rooms"
+        }
+      },
+      "errors": [
+        {
+          "$ref": "#/components/errors/ImportError"
+        }
+      ],
+      "tags": [
+        {
+          "name": "typescript"
+        }
+      ]
+    },
+    {
+      "name": "verify",
+      "description": "Compares counts and per-room digests and names the sample to read back.",
+      "params": [
+        {
+          "name": "expected",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/Rooms"
+          }
+        },
+        {
+          "name": "actual",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/Rooms"
+          }
+        },
+        {
+          "name": "sample",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "description": "Defaults to 20.",
+            "minimum": 0
+          }
+        }
+      ],
+      "result": {
+        "name": "check",
+        "schema": {
+          "$ref": "#/components/schemas/Check"
+        }
+      },
+      "tags": [
+        {
+          "name": "typescript"
+        }
+      ]
+    }
+  ],
+  "components": {
+    "schemas": {
+      "RoomEntry": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Room id."
+          },
+          "status": {
+            "type": "string",
+            "description": "Game status; statuses in openStatuses (default lobby) are open for joining."
+          },
+          "playerCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "names": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Player names."
+          },
+          "code": {
+            "type": "string",
+            "description": "Code people type to join; case, spaces and hyphens do not matter."
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "playerCount",
+          "names"
+        ],
+        "additionalProperties": false,
+        "description": "One room as the home list shows it (TypeScript RoomEntry, Swift and Kotlin RoomInfo)."
+      },
+      "Rooms": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/components/schemas/RoomEntry"
+        },
+        "description": "Room id to entry."
+      },
+      "ListOptions": {
+        "type": "object",
+        "properties": {
+          "order": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Fixed rooms first in this order; a fixed room not heard from yet is left out."
+          },
+          "openOnly": {
+            "type": "boolean",
+            "description": "Only open rooms."
+          },
+          "openStatuses": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "EntryAction": {
+        "type": "string",
+        "enum": [
+          "join",
+          "rejoin",
+          "watch",
+          "full",
+          "none"
+        ],
+        "description": "Kotlin EntryAction constants are the same words in capitals."
+      },
+      "RoomDescription": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "empty",
+              "inGame",
+              "lobby"
+            ]
+          },
+          "names": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "kind",
+          "names"
+        ],
+        "additionalProperties": false
+      },
+      "RoomKind": {
+        "type": "string",
+        "enum": [
+          "empty",
+          "inGame",
+          "lobby"
+        ],
+        "description": "Kotlin RoomKind constants are EMPTY, IN_GAME and LOBBY."
+      },
+      "DirectoryOptions": {
+        "type": "object",
+        "required": [
+          "maxConnections"
+        ],
+        "properties": {
+          "roomIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Rooms that always exist, in display order; each is asked directly the first time it is missing."
+          },
+          "openStatuses": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "maxConnections": {
+            "type": "integer",
+            "description": "Watchers allowed at once; more are answered 503.",
+            "minimum": 0
+          },
+          "askRoom": {
+            "description": "Function (env, id: string) => Promise<RoomEntry>; defaults to GET https://room/room on env.ROOM.getByName(id) as realtime-rooms serves it."
+          },
+          "accept": {
+            "description": "Function (ctx, first: string) => Response; opens a watcher connection and sends it first; defaults to the Workers WebSocketPair."
+          }
+        },
+        "additionalProperties": false
+      },
+      "DirectoryClass": {
+        "description": "class Directory extends the given Durable Object base; bind it as DIRECTORY and name the object home. It serves the requests in interfaces/room-directory-http.json and the live list in interfaces/room-directory-live.json, keeping the list under storage key rooms."
+      },
+      "RoomWatch": {
+        "type": "object",
+        "properties": {
+          "rooms": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/RoomEntry"
+            }
+          },
+          "down": {
+            "type": "boolean",
+            "description": "True while the server cannot be reached."
+          }
+        },
+        "required": [
+          "rooms",
+          "down"
+        ],
+        "additionalProperties": false
+      },
+      "RoomWatcher": {
+        "type": "object",
+        "required": [
+          "state",
+          "sleep",
+          "wake",
+          "stop"
+        ],
+        "properties": {
+          "state": {
+            "description": "Function () => RoomWatch."
+          },
+          "sleep": {
+            "description": "Function () => void; closes the connection (hidden tab)."
+          },
+          "wake": {
+            "description": "Function () => void; reconnects."
+          },
+          "stop": {
+            "description": "Function () => void."
+          }
+        },
+        "additionalProperties": false
+      },
+      "Check": {
+        "type": "object",
+        "properties": {
+          "counts": {
+            "type": "boolean"
+          },
+          "checksums": {
+            "type": "boolean"
+          },
+          "sample": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The first sample room ids, for read-back."
+          }
+        },
+        "required": [
+          "counts",
+          "checksums",
+          "sample"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "errors": {
+      "ImportError": {
+        "code": 1,
+        "message": "Not a valid ae/room-directory-state 1.0.0 export",
+        "data": {
+          "type": "string",
+          "description": "Wrong header, unknown line type, checksum mismatch, duplicate room, malformed entry, room count mismatch, or a JSON parse error."
+        }
+      }
+    }
+  }
+}

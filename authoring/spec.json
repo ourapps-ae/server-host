@@ -1,6 +1,6 @@
 {
   "name": "server-host",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "title": "Server host",
   "description": "Server entry point for a server target: one worker module that runs on Cloudflare Workers or, through a Node http adapter, on the owner's own hardware, with origin policy, region placement and deployment files rendered from typed settings.",
   "facilities": [
@@ -22,13 +22,13 @@
       "id": "room-session",
       "type": "ae/room-session",
       "version": "1.0.0",
-      "path": "interfaces/required/room-session.json"
+      "path": "interfaces/required-room-session.json"
     },
     {
       "id": "room-directory",
       "type": "ae/room-directory",
       "version": "1.0.0",
-      "path": "interfaces/required/room-directory.json"
+      "path": "interfaces/required-room-directory.json"
     }
   ],
   "collect": [
