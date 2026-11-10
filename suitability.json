@@ -1,32 +1,61 @@
 {
   "format": 1,
-  "jobs": ["server-host"],
+  "jobs": [
+    "server-host"
+  ],
   "profiles": [
     {
       "id": "cloudflare-free",
-      "load": { "requestsPerDay": 100000, "storedMegabytes": 5000 },
+      "load": {
+        "requestsPerDay": 100000,
+        "storedMegabytes": 5000
+      },
       "cost": "free",
-      "regions": ["any", "eu", "us", "fedramp"],
+      "regions": [
+        "any",
+        "eu",
+        "us",
+        "fedramp"
+      ],
       "compliance": [],
-      "provider": { "name": "Cloudflare Workers with SQLite-backed Durable Objects", "tier": "Workers Free", "limitsSource": "https://developers.cloudflare.com/workers/platform/limits/" },
-      "notes": "Checked 2026-11-09 on the Workers limits, Workers pricing, Durable Objects limits, Durable Objects pricing and Durable Objects data location pages. Workers Free: 100,000 requests per day (Error 1027 after that), 10 ms CPU per request, 128 MB memory, 50 subrequests per request. Durable Objects on Free: SQLite-backed only, 100,000 requests per day and 13,000 GB-s per day of duration, 5 GB total storage per account (the Durable Objects limits page also says a single object is capped at 1 GB on Free in its FAQ, while its table says 10 GB per object; that conflict is not resolved here), 5 million rows read and 100,000 rows written per day. A WebSocket connection costs one request and incoming messages count 1 in 20 as requests for billing; the pages do not say whether the daily free request limit uses the same ratio, so requestsPerDay may understate or overstate live-connection capacity. The pages give no concurrent-connection limit, so concurrentPeople is omitted. One object has a soft limit of 1,000 requests per second. Jurisdictions eu, us and fedramp restrict where objects run and store data; the pages do not say whether they are available on the free plan, and a jurisdiction is not a compliance certification, so compliance is empty."
+      "provider": {
+        "name": "Cloudflare Workers with SQLite-backed Durable Objects",
+        "tier": "Workers Free",
+        "limitsSource": "https://developers.cloudflare.com/workers/platform/limits/"
+      },
+      "notes": "Checked 2026-11-09 on the Workers and Durable Objects limits and pricing pages. Workers Free: 100,000 requests per day, 10 ms CPU per request, 128 MB memory, 50 subrequests per request. Durable Objects on Free: SQLite-backed only, 100,000 requests and 13,000 GB-s per day, 5 GB total storage, 5 million rows read and 100,000 rows written per day. The pages disagree on the per-object storage cap on Free (1 GB or 10 GB); not resolved here. A WebSocket connection costs one request and incoming messages count 1 in 20 for billing; whether the free daily limit uses the same ratio is not stated, so requestsPerDay may be wrong for live connections. No concurrent-connection limit is published, so concurrentPeople is omitted. A jurisdiction restricts where objects run; it is not a compliance certification, so compliance is empty."
     },
     {
       "id": "cloudflare-paid",
       "load": {},
       "cost": "metered",
-      "regions": ["any", "eu", "us", "fedramp"],
+      "regions": [
+        "any",
+        "eu",
+        "us",
+        "fedramp"
+      ],
       "compliance": [],
-      "provider": { "name": "Cloudflare Workers with SQLite-backed Durable Objects", "tier": "Workers Paid", "limitsSource": "https://developers.cloudflare.com/workers/platform/limits/" },
+      "provider": {
+        "name": "Cloudflare Workers with SQLite-backed Durable Objects",
+        "tier": "Workers Paid",
+        "limitsSource": "https://developers.cloudflare.com/workers/platform/limits/"
+      },
       "notes": "Checked 2026-11-09 (same pages as cloudflare-free). Workers Paid: no request limit, CPU per request 30 seconds by default and up to 5 minutes, unlimited storage per account and 10 GB per Durable Object. Prices from the Workers and Durable Objects pricing pages: $5 per month minimum; Workers 10 million requests and 30 million CPU milliseconds included, then $0.30 per million requests and $0.02 per million CPU milliseconds; Durable Objects 1 million requests and 400,000 GB-s included, then $0.15 per million requests and $12.50 per million GB-s; SQLite storage 5 GB-month included then $0.20 per GB-month; rows written 50 million included then $1.00 per million. Duration is charged while an object is active or cannot hibernate, so hibernating WebSockets matter for cost. Prices and limits change; check the pages again before quoting them. Jurisdictions restrict where objects run and store data; this is not a compliance certification."
     },
     {
       "id": "own-hardware",
       "load": {},
       "cost": "none",
-      "regions": ["any"],
+      "regions": [
+        "any"
+      ],
       "compliance": [],
-      "provider": { "name": "Node http server on the owner's machine", "tier": "own hardware", "limitsSource": null },
+      "provider": {
+        "name": "Node http server on the owner's machine",
+        "tier": "own hardware",
+        "limitsSource": null
+      },
       "notes": "No provider limits apply and none were measured: limitsSource is null. The Node adapter runs one process on one machine, holds every live object in memory, rewrites an object's whole file on each change, and has no failover, so capacity depends on the machine and is not stated here. Hardware, electricity, a stable address, TLS termination and backups are the owner's cost and are not priced here. Region is wherever the machine is."
     }
   ],
