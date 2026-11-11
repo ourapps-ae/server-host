@@ -14,10 +14,10 @@ Select `ourapps-ae/server-host` when the recipe's server target is chosen; pick 
 - Supply `room-session` (ae/room-session 1.0.0) from the component that provides it.
 - Supply `room-directory` (ae/room-directory 1.0.0) from the component that provides it (the Directory class comes from `room-directory`, not from `realtime-rooms`).
 - Secrets are given by reference only, never by value: `accountReference` carries the name of the secret.
-- aepm renders `components/server-host/server/host-settings.ts` from these settings; import `hostSettings` or `serverSettings()` from it and do not write the file.
+- aepm renders `components/server-host/server/host-settings.ts` and `wrangler.jsonc` from these settings; import `hostSettings` or `serverSettings()` from `host-settings.ts` and do not write either file. The application's worker module is `server/src/index.ts`.
 
 ## For the developer
-Cloudflare: create an account, create an API token for Workers, store the account id and token in the release pipeline's secret store under the reference name, and give that name as `accountReference`; the pipeline exports `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` for `deploy.sh`. Own hardware: install Node 26 or later, copy the rendered `start.ts`, set `PORT`, `HOST` and `DATA_DIRECTORY`, put a TLS-terminating proxy in front, back up the data folder (or run the ndjson export on a schedule). To check: run the commands below; for a live check call `GET /health` on the deployed address.
+Cloudflare: create an account, create an API token for Workers, store the account id and token in the release pipeline's secret store under the reference name, and give that name as `accountReference`; the pipeline exports `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` for `deploy.sh`. From the application's server folder: Cloudflare, `npx wrangler deploy --config ../components/server-host/server/wrangler.jsonc` with `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` resolved from the reference; own hardware or local development, `node ../components/server-host/server/start.ts` with Node 26 or later, setting `PORT`, `HOST` and `DATA_DIRECTORY`, behind a TLS-terminating proxy, backing up the data folder (or running the ndjson export on a schedule). To check: run the commands below; for a live check call `GET /health` on the deployed address.
 
 ## How to check
 From the component directory:

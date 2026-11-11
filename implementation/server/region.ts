@@ -37,11 +37,13 @@ export function regionEnv<E extends Record<string, any>>(env: E, region: string,
 }
 
 // An object class whose own env is placed too, so objects reach each other inside the same jurisdiction.
-export function withRegion<C extends new (ctx: any, env: any, ...rest: any[]) => any>(Base: C, settings: Pick<ResolvedServerSettings, "adapter" | "region">, bindings: readonly string[] = DEFAULT_BINDINGS): C {
+export function withRegion<C extends new (...args: any[]) => any>(Base: C, settings: Pick<ResolvedServerSettings, "adapter" | "region">, bindings: readonly string[] = DEFAULT_BINDINGS): C {
   if (!placementApplies(settings)) return Base;
   const region = settings.region;
   return class extends Base {
-    constructor(ctx: any, env: any, ...rest: any[]) {
+    // A mixin constructor takes its arguments as one list: (ctx, env, ...rest).
+    constructor(...args: any[]) {
+      const [ctx, env, ...rest] = args;
       super(ctx, regionEnv(env, region, bindings), ...rest);
     }
   } as C;

@@ -19,7 +19,7 @@ export interface ServerHost {
   // Origin policy and region placement in front of the room service worker.
   entry(worker: Worker, options?: EntryOptions): Worker;
   // An object class placed in the configured region (the class itself when no placement applies).
-  objectClass<C extends new (ctx: any, env: any, ...rest: any[]) => any>(Base: C): C;
+  objectClass<C extends new (...args: any[]) => any>(Base: C): C;
   // Files to deploy this server: wrangler.jsonc, deploy.sh and package.json, or start.ts and package.json.
   deployFiles(options?: DeployOptions): Record<string, string>;
 }

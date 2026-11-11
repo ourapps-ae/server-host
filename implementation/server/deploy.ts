@@ -75,6 +75,8 @@ export function renderWrangler(settings: ResolvedServerSettings, options: Deploy
     name: workerName,
     main,
     compatibility_date: date,
+    // node:crypto (hashes in the ledger and history components) needs the Node.js compatibility layer.
+    compatibility_flags: ["nodejs_compat"],
     dev: { port: options.devPort ?? 8788 },
     vars: variables(settings, options),
     durable_objects: { bindings: list.map((item) => ({ name: item.binding, class_name: item.className })) },

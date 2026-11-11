@@ -462,3 +462,60 @@ test("the rendered example matches what the template produces", () => {
   const supplied = { provider: "cloudflare-free", accountReference: "ourpoker-cloudflare-account", allowedOrigins: "https://app.example.com", roomPrefix: "demo-" };
   assert.equal(readFileSync(new URL("../examples/rendered-host-settings.ts", import.meta.url), "utf8"), render(supplied));
 });
+
+// ---- wrangler.jsonc and start.ts (installed beside host-settings.ts) ----
+
+const wranglerTemplate = readFileSync(new URL("../implementation/server/wrangler.jsonc", import.meta.url), "utf8");
+const jsonc = (text: string) => JSON.parse(text.split("\n").filter((line) => !line.startsWith("//")).join("\n"));
+
+test("the installed wrangler.jsonc is the deployment renderWrangler writes, with the application's worker module", { skip: !existsSync(new URL("../component.json", import.meta.url)) && "component.json is not in this copy" }, () => {
+  const manifest = JSON.parse(readFileSync(manifestUrl, "utf8"));
+  assert.deepEqual(manifest.artefacts.find((item: any) => item.source === "implementation/server/wrangler.jsonc"),
+    { source: "implementation/server/wrangler.jsonc", destination: "components/server-host/server/wrangler.jsonc", template: true, executable: false });
+  for (const supplied of [
+    { provider: "cloudflare-free", accountReference: "ourpoker-cloudflare-account", allowedOrigins: "https://app.example.com", roomPrefix: "ourpoker-" },
+    { provider: "cloudflare-paid", accountReference: "acme", roomPrefix: "demo-" },
+  ]) {
+    const values = configuration(declarations, supplied);
+    const installed = jsonc(substitute(wranglerTemplate, declarations, values));
+    const rendered = wranglerOf({ ...supplied, allowedOrigins: values.allowedOrigins } as ServerSettings, { main: "../../../server/src/index.ts" });
+    assert.deepEqual(installed, rendered);
+    assert.deepEqual(installed.compatibility_flags, ["nodejs_compat"]);
+  }
+});
+
+test("start.ts serves the application's worker module on Node with the installed settings", async () => {
+  const root = mkdtempSync(join(tmpdir(), "start-"));
+  try {
+    const host = join(root, "components/server-host/server");
+    mkdirSync(join(host, "node"), { recursive: true });
+    for (const name of ["start.ts", "host.ts", "settings.ts", "entry.ts", "region.ts", "deploy.ts"]) copyFileSync(new URL(`../implementation/server/${name}`, import.meta.url), join(host, name));
+    for (const name of readdirSync(new URL("../implementation/server/node/", import.meta.url))) copyFileSync(new URL(`../implementation/server/node/${name}`, import.meta.url), join(host, "node", name));
+    writeFileSync(join(host, "host-settings.ts"), render({ provider: "own-hardware", roomPrefix: "demo-", allowedOrigins: "https://app.example.com" }));
+    mkdirSync(join(root, "server/src"), { recursive: true });
+    writeFileSync(join(root, "server/src/index.ts"), `import { buildWorker } from ${JSON.stringify(new URL("../examples/worker.ts", import.meta.url).href)};
+const worker = buildWorker({ provider: "own-hardware", roomPrefix: "demo-", allowedOrigins: "https://app.example.com" });
+export default worker.entry;
+export const Room = worker.Room;
+export const Directory = worker.Directory;
+`);
+    const { spawn } = await import("node:child_process");
+    const child = spawn(process.execPath, [join(host, "start.ts")], { cwd: join(root, "server"), env: { PATH: process.env.PATH ?? "", PORT: "0", DATA_DIRECTORY: join(root, "data"), POLL_MS: "900" }, stdio: ["ignore", "pipe", "pipe"] });
+    try {
+      const address = await new Promise<string>((resolve, reject) => {
+        let out = "";
+        child.stdout.on("data", (chunk) => { out += chunk; const m = /listening on (http:\/\/\S+)/.exec(out); if (m) resolve(m[1]); });
+        child.stderr.on("data", (chunk) => { out += chunk; });
+        child.once("exit", (code) => reject(new Error(`start.ts exited ${code}: ${out}`)));
+      });
+      assert.match(address, /^http:\/\/127\.0\.0\.1:\d+$/);
+      const health = await (await fetch(`${address}/health`, { headers: { origin: "https://app.example.com" } })).json();
+      assert.deepEqual(health, { ok: true, origin: "https://app.example.com" });
+      assert.equal((await fetch(`${address}/r/casino/add`, { method: "POST", body: JSON.stringify({ by: 2 }) })).status, 200);
+    } finally {
+      child.kill("SIGTERM");
+      await new Promise((resolve) => child.once("exit", resolve));
+    }
+    assert.ok(existsSync(join(root, "data")), "room storage is kept in DATA_DIRECTORY");
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});

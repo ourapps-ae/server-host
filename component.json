@@ -83,6 +83,18 @@
       "executable": false,
       "source": "implementation/server/settings.ts",
       "template": false
+    },
+    {
+      "destination": "components/server-host/server/start.ts",
+      "executable": false,
+      "source": "implementation/server/start.ts",
+      "template": false
+    },
+    {
+      "destination": "components/server-host/server/wrangler.jsonc",
+      "executable": false,
+      "source": "implementation/server/wrangler.jsonc",
+      "template": true
     }
   ],
   "capabilities": {
@@ -102,7 +114,9 @@
       "components/server-host/server/node/websocket.ts",
       "components/server-host/server/node/workers-shim.ts",
       "components/server-host/server/region.ts",
-      "components/server-host/server/settings.ts"
+      "components/server-host/server/settings.ts",
+      "components/server-host/server/start.ts",
+      "components/server-host/server/wrangler.jsonc"
     ]
   },
   "collect": [
@@ -262,6 +276,14 @@
     {
       "executable": false,
       "path": "implementation/server/settings.ts"
+    },
+    {
+      "executable": false,
+      "path": "implementation/server/start.ts"
+    },
+    {
+      "executable": false,
+      "path": "implementation/server/wrangler.jsonc"
     },
     {
       "executable": false,
