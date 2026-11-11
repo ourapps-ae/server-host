@@ -35,7 +35,7 @@ The installer collects `provider` (`cloudflare-free`, `cloudflare-paid` or `own-
 - `implementation/server/wrangler.jsonc` -> `components/server-host/server/wrangler.jsonc` (template: aepm replaces `{{roomPrefix}}` and `{{allowedOrigins}}` at install)
 
 Dependencies: none.
-`tools.lock.json` pins verification tools: node 26.5.0. Licence wording remains deferred.
+`tools.lock.json` pins verification tools: node 26.5. Licence wording remains deferred.
 
 ## Provided interfaces
 - `interfaces/server-host.json` defines `server-host` (ae/server-host) version 1.0.0 as an OpenRPC 1.3.2 document: one method per exported function of `server/host.ts` and `server/node/*.ts` (`createServerHost`, `validateSettings`, `originAllowed`, `regionEnv`, `serveNode`, the storage export and import functions and the rest), plus the functions of the returned host (`ServerHost.*`), with parameters and results as JSON Schema 2020-12 and the errors each throws.
@@ -57,7 +57,7 @@ cloudflare-free and cloudflare-paid deploy one Worker with SQLite-backed Durable
 ## Verification
 `node --test tests/web.test.ts` checks settings validation (every provider, account reference grammar, origins, regions), the `host-settings.ts` template rendered by a small pure renderer that mirrors aepm's `{{setting}}` rules (quoted positions, grammars, secret settings refused, defaults) and then loaded and handed to the host, the origin policy and region placement against fake namespaces, the rendered deployment files, the installed `wrangler.jsonc` against `renderWrangler`, `start.ts` serving a worker module laid out as an installed application (on a free port, with `DATA_DIRECTORY`), RFC 6455 framing, and the Node adapter end to end on a real socket with a small Workers-style service: HTTP routing to named objects, object-to-object calls, streamed bodies, WebSocket handshake, first message, auto ping reply, broadcast, binary frames, server and client close, protocol errors, alarms, abort and restart, persistence across a restart including a pending alarm, and storage export and import. `authoring/integration-realtime-rooms.ts` (not packaged) additionally runs the real realtime-rooms service on the Node adapter. Deployment to Cloudflare, the wrangler files against a real account, and TLS, load and long-running behaviour of the Node adapter were not exercised.
 
-- `node --test tests/web.test.ts` (web, required-local; tools: node 26.5.0)
+- `node --test tests/web.test.ts` (web, required-local; tools: node 26.5)
 
 ## Scenarios and presentation
 A small table uses cloudflare-free and stays within the free request allowance; a larger or always-on service uses cloudflare-paid; a club that prefers its own machine uses own-hardware and keeps data in a folder it can back up. A server pinned to `eu` keeps its objects in the European Union jurisdiction on Cloudflare.

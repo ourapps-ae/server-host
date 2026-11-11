@@ -22,5 +22,5 @@ Cloudflare: create an account, create an API token for Workers, store the accoun
 ## How to check
 From the component directory:
 
-- `node --test tests/web.test.ts` (web, required-local; tools: node 26.5.0)
-- `python3.12 -B /Users/george/Projects/com/my/tools/check_component.py components/server-host` validates the manifest, sidecars and runs the required-local suite.
+- `node --test tests/web.test.ts` (web, required-local; tools: node 26.5)
+- `python3 -m aepm review <digest> --store STORE --policy POLICY --trusted --allow-network` checks an archive fetched with `python3 -m aepm fetch ourapps-ae/server-host@VERSION --store STORE --from https://ourapps.app` and runs its suites.
