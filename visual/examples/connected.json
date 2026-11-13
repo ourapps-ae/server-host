@@ -12,7 +12,7 @@
       "kind": "component",
       "status": "example",
       "package": "ourapps-ae/server-host",
-      "version": "0.5.1",
+      "version": "0.6.0",
       "ports": [
         {
           "id": "room-session",

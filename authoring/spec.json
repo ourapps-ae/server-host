@@ -1,6 +1,6 @@
 {
   "name": "server-host",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "title": "Server host",
   "description": "Server entry point for a server target: one worker module that runs on Cloudflare Workers or, through a Node http adapter, on the owner's own hardware, with origin policy, region placement and deployment files rendered from typed settings.",
   "facilities": [
