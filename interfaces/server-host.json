@@ -32,6 +32,11 @@
         {
           "$ref": "#/components/errors/SettingsError"
         }
+      ],
+      "tags": [
+        {
+          "name": "typescript"
+        }
       ]
     },
     {
@@ -56,6 +61,11 @@
         {
           "$ref": "#/components/errors/SettingsError"
         }
+      ],
+      "tags": [
+        {
+          "name": "typescript"
+        }
       ]
     },
     {
@@ -79,6 +89,11 @@
       "errors": [
         {
           "$ref": "#/components/errors/SettingsError"
+        }
+      ],
+      "tags": [
+        {
+          "name": "typescript"
         }
       ]
     },
@@ -118,6 +133,11 @@
         {
           "$ref": "#/components/errors/SettingsError"
         }
+      ],
+      "tags": [
+        {
+          "name": "typescript"
+        }
       ]
     },
     {
@@ -137,7 +157,12 @@
         "schema": {
           "$ref": "#/components/schemas/ServerSettings"
         }
-      }
+      },
+      "tags": [
+        {
+          "name": "typescript"
+        }
+      ]
     },
     {
       "name": "adapterFor",
@@ -156,7 +181,12 @@
         "schema": {
           "$ref": "#/components/schemas/AdapterKind"
         }
-      }
+      },
+      "tags": [
+        {
+          "name": "typescript"
+        }
+      ]
     },
     {
       "name": "applicationIdFrom",
@@ -175,7 +205,12 @@
         "schema": {
           "type": "string"
         }
-      }
+      },
+      "tags": [
+        {
+          "name": "typescript"
+        }
+      ]
     },
     {
       "name": "roomsSettings",
@@ -201,7 +236,12 @@
         "schema": {
           "$ref": "#/components/schemas/RoomsSettings"
         }
-      }
+      },
+      "tags": [
+        {
+          "name": "typescript"
+        }
+      ]
     },
     {
       "name": "ServerHost.roomsSettings",
@@ -220,7 +260,12 @@
         "schema": {
           "$ref": "#/components/schemas/RoomsSettings"
         }
-      }
+      },
+      "tags": [
+        {
+          "name": "typescript"
+        }
+      ]
     },
     {
       "name": "ServerHost.entry",
@@ -246,7 +291,12 @@
         "schema": {
           "description": "Worker: an object with fetch(request: Request, env) => Promise<Response>."
         }
-      }
+      },
+      "tags": [
+        {
+          "name": "typescript"
+        }
+      ]
     },
     {
       "name": "ServerHost.objectClass",
@@ -265,7 +315,12 @@
         "schema": {
           "description": "A Durable Object class: new (ctx, env) with optional fetch, alarm, webSocketMessage, webSocketClose and webSocketError."
         }
-      }
+      },
+      "tags": [
+        {
+          "name": "typescript"
+        }
+      ]
     },
     {
       "name": "ServerHost.deployFiles",
@@ -288,6 +343,11 @@
       "errors": [
         {
           "$ref": "#/components/errors/SettingsError"
+        }
+      ],
+      "tags": [
+        {
+          "name": "typescript"
         }
       ]
     },
@@ -322,7 +382,12 @@
         "schema": {
           "description": "Worker: an object with fetch(request: Request, env) => Promise<Response>."
         }
-      }
+      },
+      "tags": [
+        {
+          "name": "typescript"
+        }
+      ]
     },
     {
       "name": "originAllowed",
@@ -378,7 +443,12 @@
         "schema": {
           "type": "boolean"
         }
-      }
+      },
+      "tags": [
+        {
+          "name": "typescript"
+        }
+      ]
     },
     {
       "name": "placementApplies",
@@ -410,7 +480,12 @@
         "schema": {
           "type": "boolean"
         }
-      }
+      },
+      "tags": [
+        {
+          "name": "typescript"
+        }
+      ]
     },
     {
       "name": "regionEnv",
@@ -453,6 +528,11 @@
       "errors": [
         {
           "$ref": "#/components/errors/PlacementError"
+        }
+      ],
+      "tags": [
+        {
+          "name": "typescript"
         }
       ]
     },
@@ -503,7 +583,12 @@
         "schema": {
           "description": "A Durable Object class: new (ctx, env) with optional fetch, alarm, webSocketMessage, webSocketClose and webSocketError."
         }
-      }
+      },
+      "tags": [
+        {
+          "name": "typescript"
+        }
+      ]
     },
     {
       "name": "deployFiles",
@@ -533,6 +618,11 @@
       "errors": [
         {
           "$ref": "#/components/errors/SettingsError"
+        }
+      ],
+      "tags": [
+        {
+          "name": "typescript"
         }
       ]
     },
@@ -575,7 +665,12 @@
             "$ref": "#/components/schemas/ObjectRecord"
           }
         }
-      }
+      },
+      "tags": [
+        {
+          "name": "typescript"
+        }
+      ]
     },
     {
       "name": "exportStorage",
@@ -598,7 +693,12 @@
           "type": "string",
           "description": "ndjson ending in a newline."
         }
-      }
+      },
+      "tags": [
+        {
+          "name": "typescript"
+        }
+      ]
     },
     {
       "name": "importStorage",
@@ -624,6 +724,11 @@
       "errors": [
         {
           "$ref": "#/components/errors/StorageFormatError"
+        }
+      ],
+      "tags": [
+        {
+          "name": "typescript"
         }
       ]
     },
@@ -659,6 +764,11 @@
       "errors": [
         {
           "$ref": "#/components/errors/ObjectExists"
+        }
+      ],
+      "tags": [
+        {
+          "name": "typescript"
         }
       ]
     },
@@ -701,7 +811,12 @@
         "schema": {
           "$ref": "#/components/schemas/StorageCheck"
         }
-      }
+      },
+      "tags": [
+        {
+          "name": "typescript"
+        }
+      ]
     }
   ],
   "components": {
@@ -1217,5 +1332,8 @@
         }
       }
     }
+  },
+  "x-ourapps-modules": {
+    "server": "server/index.ts"
   }
 }

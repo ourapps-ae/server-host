@@ -104,5 +104,6 @@
     {
       "$ref": "#/$defs/objectLine"
     }
-  ]
+  ],
+  "x-ourapps-modules": {}
 }
